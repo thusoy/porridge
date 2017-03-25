@@ -218,20 +218,20 @@ class Porridge(object):
 
 
     def _encode(self, raw_hash, salt):
-        format_args = dict(
-            algo='argon2i',
-            t_cost=self.time_cost,
-            m_cost=self.memory_cost,
-            parallelism=self.parallelism,
-            salt=b64_encode_raw(salt),
-            hash=b64_encode_raw(raw_hash),
-            version=ARGON2_VERSION,
-            keyid='',
+        template = (
+            '${algo}$v={version}$m={m_cost},t={t_cost},p={parallelism}'
+            ',keyid={keyid}${salt}${hash}'
         )
-        if self.keyid:
-            format_args['keyid'] = ',keyid={}'.format(self.keyid.decode(self.encoding))
-        return ('${algo}$v={version}$m={m_cost},t={t_cost},p={parallelism}{keyid}'
-            '${salt}${hash}').format(**format_args)
+        return template.format(
+                algo='argon2i',
+                t_cost=self.time_cost,
+                m_cost=self.memory_cost,
+                parallelism=self.parallelism,
+                salt=b64_encode_raw(salt),
+                hash=b64_encode_raw(raw_hash),
+                version=ARGON2_VERSION,
+                keyid=self.keyid.decode(self.encoding),
+            )
 
 
 def argon2_error_message(error_code):
