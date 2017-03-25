@@ -224,7 +224,6 @@ class Porridge(object):
             secret = self.secret_map.get(binary_keyid)
             if not secret:
                 raise MissingKeyError(keyid)
-            assert secret, 'No key for keyid %s' % keyid
             context_params['secret'] = secret
 
         with argon2_context(**context_params) as ctx:
