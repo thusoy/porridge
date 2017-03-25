@@ -15,6 +15,7 @@ setup(
     extras_require={
         'test': [
             'pytest',
+            'pytest-cov',
             'watchdog',
         ],
     },
