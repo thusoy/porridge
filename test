@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./venv/bin/py.test tests/ $@

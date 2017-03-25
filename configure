@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -eu
+
+main () {
+    create_virtualenv
+    install_requirements
+}
+
+create_virtualenv () {
+    virtualenv venv -p $(which python3)
+}
+
+install_requirements () {
+    ./venv/bin/pip install -e .[test]
+}
+
+main
