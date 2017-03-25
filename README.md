@@ -111,6 +111,9 @@ A: Because it's too easy to get stuff wrong when communicated to people who are 
 *Q: How do I migrate to porridge from pbkdf2/bcrypt/scrypt/plain argon2?*
 A: Add a new column in your database to store the new encoded passwords, add porridge and boil passwords with it in addition to your existing scheme and store them to the new column. When verifying, verify with both your existing scheme and porridge if there's anything in the new column. When you deem that few enough users haven't gotten their passwords encoded by porridge yet, drop the old password column and stop using the old scheme. The users who hasn't gotten new encoded passwords will be forced through password reset, but otherwise no one will notice any difference. If you are already using argon2 but without server-side secrets, porridge can dropped in directly.
 
+*Q: Why "porridge"?*
+A: Because good porridge requires more than just salt, takes a long time to boil, and you cannot separate its ingredients  after they've been boiled. And I was hungry when starting writing this. And we need better terminology for password storage, see the first question.
+
 
 Alternatives
 ------------
