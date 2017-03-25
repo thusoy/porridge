@@ -11,7 +11,7 @@ from argon2.low_level import (
 )
 
 from .utils import check_types, ensure_bytes, b64_decode_raw, b64_encode_raw
-from .exceptions import MissingKeyError
+from .exceptions import PorridgeError, MissingKeyError
 
 # TODO: Compute these dynamically for the target environment. Prefer magic to people having to configure cryptographic parameters.
 DEFAULT_RANDOM_SALT_LENGTH = 16
@@ -135,7 +135,9 @@ class Porridge(object):
         )
         with argon2_context(**context_params) as ctx:
             result = core(ctx, Type.I.value)
-            assert result == lib.ARGON2_OK, 'Result was %d' % result
+            if result != lib.ARGON2_OK:
+                error_message = ffi.string(lib.argon2_error_message(result)).decode('utf-8')
+                raise PorridgeError(error_message)
 
             raw_hash = bytes(ffi.buffer(ctx.out, ctx.outlen))
         return self._encode(raw_hash, salt)

@@ -1,2 +1,2 @@
 from .porridge import Porridge
-from .exceptions import MissingKeyError
+from .exceptions import PorridgeError, MissingKeyError
