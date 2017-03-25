@@ -16,7 +16,7 @@ def test_verify(password):
     """
     Verification works with unicode and bytes.
     """
-    porridge = Porridge(encoding='latin1')
+    porridge = Porridge('keyid1:key1', encoding='latin1')
     encoded = (  # handrolled test vector lifted from argon2_cffi
         "$argon2i$m=8,t=1,p=1$"
         "bL/lLsegFKTuR+5vVyA8tA$VKz5CHavCtFOL1N5TIXWSA"
@@ -32,8 +32,8 @@ def test_verify_self(porridge):
 
 @bytes_and_unicode_password
 def test_attacker_cant_verify_without_secret(password):
-    our_porridge = Porridge(secrets=[('id1', 'key1')])
-    attacker_porridge = Porridge()
+    our_porridge = Porridge('id1:key1')
+    attacker_porridge = Porridge('otherid:otherkey')
     encoded_password = our_porridge.boil(password)
     with pytest.raises(MissingKeyError):
         attacker_porridge.verify(password, encoded_password)

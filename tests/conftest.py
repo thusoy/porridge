@@ -9,4 +9,8 @@ def porridge():
 
     Does no environment check and has very fast parameters.
     '''
-    return Porridge(time_cost=1, memory_cost=8, parallelism=1)
+    return Porridge('key1:secret1',
+        time_cost=1,
+        memory_cost=8,
+        parallelism=1,
+    )

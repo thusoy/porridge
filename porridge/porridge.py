@@ -47,9 +47,12 @@ class Porridge(object):
     Uses *always* Argon2\ **i** and a random salt_.
 
     The reason for this being a class is both for convenience to carry
-    parameters and to verify the parameters only *once*.   Any unnecessary
+    parameters and to verify the parameters only *once*. Any unnecessary
     slowdown when hashing is a tangible advantage for a brute force attacker.
 
+    :param str secrets: A comma-separated string of keyid:key pairs that will be used for
+        keyed hashing. The first element in the list will be used to boil new passwords,
+        the others to verify old ones.
     :param int time_cost: Defines the amount of computation realized and
         therefore the execution time, given in number of iterations.
     :param int memory_cost: Defines the memory usage, given in kibibytes_.
@@ -61,9 +64,6 @@ class Porridge(object):
     :param str encoding: The Argon2 C library expects bytes.  So if
         :meth:`hash` or :meth:`verify` are passed an unicode string, it will be
         encoded using this encoding.
-    :param list secrets: A list of (keyid, key) tuples that will be used for
-        keyed hashing. The first element in the list will be used for new
-        hashes, the others to verify old ones.
 
     .. versionadded:: 16.0.0
 
@@ -77,13 +77,13 @@ class Porridge(object):
 
     def __init__(
         self,
+        secrets,
         time_cost=DEFAULT_TIME_COST,
         memory_cost=DEFAULT_MEMORY_COST,
         parallelism=DEFAULT_PARALLELISM,
         hash_len=DEFAULT_HASH_LENGTH,
         salt_len=DEFAULT_RANDOM_SALT_LENGTH,
         encoding="utf-8",
-        secrets=None,
     ):
         e = check_types(
             time_cost=(time_cost, int),
@@ -102,21 +102,29 @@ class Porridge(object):
         self.salt_len = salt_len
         self.encoding = encoding
 
-        if secrets:
-            self.secret_map = dict(secrets)
-            self.secret = secrets[0][1]
-            self.keyid = secrets[0][0]
-        else:
-            self.secret_map = {}
-            self.secret = None
-            self.keyid = None
+        self.secret_map = {}
+        self.secret = None
+        self.keyid = None
+        for secret_pair in secrets.split(','):
+            keyid, secret = secret_pair.split(':', 1)
+            keyid = self._ensure_bytes(keyid)
+            secret = self._ensure_bytes(secret)
+            if self.secret is None:
+                self.secret = secret
+                self.keyid = keyid
+            self.secret_map[keyid] = secret
+
+
+    def _ensure_bytes(self, s):
+        return ensure_bytes(s, self.encoding)
 
 
     def boil(self, password):
         """
-        Hash *password* and return an encoded hash.
+        Boil *password* and return and encoded password that can be stored in a
+        database.
 
-        :param password: Password to hash.
+        :param password: Password to boil.
         :type password: ``bytes`` or ``unicode``
 
         :raises argon2.exceptions.HashingError: If hashing fails.
@@ -190,7 +198,7 @@ class Porridge(object):
             parallelism=parallelism,
             hash_len=len(raw_hash),
             salt=salt,
-            password=ensure_bytes(password, self.encoding),
+            password=self._ensure_bytes(password),
             version=version,
         )
 
