@@ -110,8 +110,8 @@ class Porridge(object):
         self.keyid = None
         for secret_pair in secrets.split(','):
             keyid, secret = secret_pair.split(':', 1)
-            keyid = self._ensure_bytes(keyid)
-            secret = self._ensure_bytes(secret)
+            keyid = keyid.encode('utf-8')
+            secret = secret.encode('utf-8')
             if self.secret is None:
                 self.secret = secret
                 self.keyid = keyid
@@ -126,10 +126,6 @@ class Porridge(object):
         combination of parameters.
         """
         self.boil('dummy')
-
-
-    def _ensure_bytes(self, s):
-        return ensure_bytes(s, self.encoding)
 
 
     def boil(self, password):
@@ -152,7 +148,7 @@ class Porridge(object):
         context_params = dict(
             salt=salt,
             password=ensure_bytes(password, self.encoding),
-            secret=ensure_bytes(self.secret, self.encoding) if self.secret else None,
+            secret=self.secret,
             time_cost=self.time_cost,
             memory_cost=self.memory_cost,
             parallelism=self.parallelism,
@@ -250,6 +246,10 @@ class Porridge(object):
             raise PorridgeError(error_message)
 
 
+    def _ensure_bytes(self, s):
+        return ensure_bytes(s, self.encoding)
+
+
     def _encode(self, raw_hash, salt):
         template = (
             '${algo}$v={version}$m={m_cost},t={t_cost},p={parallelism}'
@@ -263,7 +263,7 @@ class Porridge(object):
                 salt=b64_encode_raw(salt),
                 hash=b64_encode_raw(raw_hash),
                 version=ARGON2_VERSION,
-                keyid=self.keyid.decode(self.encoding),
+                keyid=self.keyid.decode('utf-8'),
             )
 
 
