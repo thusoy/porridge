@@ -1,4 +1,5 @@
 import resource
+import contextlib
 
 import pytest
 
@@ -31,33 +32,39 @@ def test_operational_error_memory_allocation_error_on_verify(porridge):
 
 
 def test_operational_error_on_threading_error_on_boil():
-    original_limits = resource.getrlimit(resource.RLIMIT_NPROC)
-    new_limits = (100, original_limits[1])
-    resource.setrlimit(resource.RLIMIT_NPROC, new_limits)
-    parallelism = new_limits[0] + 1
-    memory_cost = 8*parallelism
-    with pytest.raises(PorridgeError) as exception:
-        Porridge('key:secret', parallelism=parallelism, memory_cost=memory_cost)
+    with nproc_soft_limit(100) as limits:
+        parallelism = limits[0] + 1
+        memory_cost = 8*parallelism
+        with pytest.raises(PorridgeError) as exception:
+            Porridge('key:secret', parallelism=parallelism, memory_cost=memory_cost)
     assert exception.value.args[0] == 'Threading failure'
-    resource.setrlimit(resource.RLIMIT_NPROC, original_limits)
 
 
 def test_operational_error_on_threading_error_on_verify(porridge):
     # 'password' encoded with key 'secret', then just overwriting the costs
     encoded_template = (
-        '$argon2i$v=19$m={memory_cost},t=1,p={parallelism},keyid=key1$nZOoCCqcGHXS0w3JBFK1ng$'
-        'eBNrzME/WOyM7N2Hk8Oz8sDGa8b/L3k0RD85JsN49zA'
+        '$argon2i$v=19$m={memory_cost},t=1,p={parallelism},keyid=key1$'
+        'nZOoCCqcGHXS0w3JBFK1ng$eBNrzME/WOyM7N2Hk8Oz8sDGa8b/L3k0RD85JsN49zA'
     )
-    original_limits = resource.getrlimit(resource.RLIMIT_NPROC)
-    new_limits = (100, original_limits[1])
-    resource.setrlimit(resource.RLIMIT_NPROC, new_limits)
-    parallelism = new_limits[0] + 1
-    memory_cost = 8*parallelism
-    encoded = encoded_template.format(
-        memory_cost=memory_cost,
-        parallelism=parallelism,
-    )
-    with pytest.raises(PorridgeError) as exception:
-        porridge.verify('password', encoded)
+    with nproc_soft_limit(100) as limits:
+        parallelism = limits[0] + 1
+        memory_cost = 8*parallelism
+        encoded = encoded_template.format(
+            memory_cost=memory_cost,
+            parallelism=parallelism,
+        )
+        with pytest.raises(PorridgeError) as exception:
+            porridge.verify('password', encoded)
     assert exception.value.args[0] == 'Threading failure'
-    resource.setrlimit(resource.RLIMIT_NPROC, original_limits)
+
+
+@contextlib.contextmanager
+def nproc_soft_limit(soft_limit):
+    original_limits = resource.getrlimit(resource.RLIMIT_NPROC)
+    new_limits = (soft_limit, original_limits[1])
+    resource.setrlimit(resource.RLIMIT_NPROC, new_limits)
+
+    try:
+        yield new_limits
+    finally:
+        resource.setrlimit(resource.RLIMIT_NPROC, original_limits)

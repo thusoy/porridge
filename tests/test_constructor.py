@@ -2,6 +2,7 @@ import pytest
 
 from porridge import Porridge, ParameterError
 
+
 def test_invalid_parameters():
     with pytest.raises(ParameterError) as exception:
         porridge = Porridge('key:secret', time_cost=1, memory_cost=1)
