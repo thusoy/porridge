@@ -122,7 +122,7 @@ class Porridge(object):
 
         :rtype: unicode
         """
-        salt = ('a' * self.salt_len).encode('utf-8')#os.urandom(self.salt_len)
+        salt = os.urandom(self.salt_len)
         context_params = dict(
             salt=salt,
             password=ensure_bytes(password, self.encoding),
