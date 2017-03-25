@@ -36,3 +36,10 @@ def test_attacker_cant_verify_without_secret(password):
     encoded_password = our_porridge.boil(password)
     with pytest.raises(MissingKeyError):
         attacker_porridge.verify(password, encoded_password)
+
+
+def test_verify_invalid_password_type(porridge):
+    with pytest.raises(TypeError) as exception:
+        porridge.verify(1, '')
+
+    assert exception.value.args[0] == "'password' must be a str or bytes (got int)."

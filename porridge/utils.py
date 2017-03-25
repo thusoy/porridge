@@ -20,7 +20,7 @@ def check_types(**kw):
     for name, (value, types) in kw.items():
         if not isinstance(value, types):
             if isinstance(types, tuple):
-                types = ", or ".join(t.__name__ for t in types)
+                types = " or ".join(t.__name__ for t in types)
             else:
                 types = types.__name__
             errors.append("'{name}' must be a {type} (got {actual})".format(

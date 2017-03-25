@@ -143,6 +143,10 @@ class Porridge(object):
 
         :rtype: unicode
         """
+        e = check_types(password=(password, (str, bytes)))
+        if e:
+            raise TypeError(e)
+
         salt = os.urandom(self.salt_len)
         context_params = dict(
             salt=salt,
@@ -189,6 +193,13 @@ class Porridge(object):
             Raise :exc:`~argon2.exceptions.VerifyMismatchError` on mismatches
             instead of its more generic superclass.
         """
+        e = check_types(
+            password=(password, (str, bytes)),
+            encoded=(encoded, str),
+        )
+        if e:
+            raise TypeError(e)
+
         assert len(encoded) < 1024 # Ensure we don't DDoS ourselves if the database holds corrupt values
         # TODO: Ensure hashed values are maximum double of what we're configured with
         # TODO: Test migrating parameters
