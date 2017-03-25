@@ -1,7 +1,7 @@
 import pytest
 import six
 
-from porridge import Porridge
+from porridge import Porridge, MissingKeyError
 from porridge.utils import ensure_bytes
 
 
@@ -28,3 +28,12 @@ def test_verify(password):
 def test_verify_self(porridge):
     password = 'password'
     assert porridge.verify(password, porridge.boil(password))
+
+
+@bytes_and_unicode_password
+def test_attacker_cant_verify_without_secret(password):
+    our_porridge = Porridge(secrets=[('id1', 'key1')])
+    attacker_porridge = Porridge()
+    encoded_password = our_porridge.boil(password)
+    with pytest.raises(MissingKeyError):
+        attacker_porridge.verify(password, encoded_password)

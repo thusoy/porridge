@@ -11,6 +11,7 @@ from argon2.low_level import (
 )
 
 from .utils import check_types, ensure_bytes, b64_decode_raw, b64_encode_raw
+from .exceptions import MissingKeyError
 
 # TODO: Compute these dynamically for the target environment. Prefer magic to people having to configure cryptographic parameters.
 DEFAULT_RANDOM_SALT_LENGTH = 16
@@ -194,7 +195,10 @@ class Porridge(object):
 
         keyid = match.group('keyid')
         if keyid:
-            secret = self.secret_map.get(keyid)
+            binary_keyid = keyid.encode('utf-8')
+            secret = self.secret_map.get(binary_keyid)
+            if not secret:
+                raise MissingKeyError(keyid)
             assert secret, 'No key for keyid %s' % keyid
             context_params['secret'] = secret
             context_params['data'] = keyid
