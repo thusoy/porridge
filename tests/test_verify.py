@@ -43,3 +43,11 @@ def test_verify_invalid_password_type(porridge):
         porridge.verify(1, '')
 
     assert exception.value.args[0] == "'password' must be a str or bytes (got int)."
+
+
+@pytest.mark.parametrize('password,encoded', (
+    ('password', '$argon2i$v=19$m=512,t=2,p=2$Vr7zN80DmEZdRQcMGeV2lA$/fcYY5wcLE9YR4ttKuwshw'),
+    ('password', '$argon2i$v=16$m=8,t=1,p=1$bXlzYWx0eXNhbHQ$nz8csvIXGASHCkUia+K4Zg'),
+))
+def test_verify_legacy_passwords_without_secret(porridge, password, encoded):
+    assert porridge.verify(password, encoded)
