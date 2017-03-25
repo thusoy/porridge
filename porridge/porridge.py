@@ -13,12 +13,13 @@ from argon2.low_level import (
 from .utils import check_types, ensure_bytes, b64_decode_raw, b64_encode_raw
 from .exceptions import PorridgeError, MissingKeyError, ParameterError
 
-# TODO: Compute these dynamically for the target environment. Prefer magic to people having to configure cryptographic parameters.
+# These parameters should be increased regularly to keep boiling slow
+# on new hardware
 DEFAULT_RANDOM_SALT_LENGTH = 16
 DEFAULT_HASH_LENGTH = 32
 DEFAULT_TIME_COST = 2
 DEFAULT_MEMORY_COST = 512
-DEFAULT_PARALLELISM = 2
+DEFAULT_PARALLELISM = 4
 DEFAULT_FLAGS = lib.ARGON2_FLAG_CLEAR_PASSWORD | lib.ARGON2_FLAG_CLEAR_SECRET
 
 # This regex validates the spec from
