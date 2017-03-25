@@ -30,6 +30,10 @@ def test_verify_self(porridge):
     assert porridge.verify(password, porridge.boil(password))
 
 
+def test_invalid_password(porridge):
+    assert porridge.verify('pass1', porridge.boil('pass2')) == False
+
+
 @bytes_and_unicode_password
 def test_attacker_cant_verify_without_secret(password):
     our_porridge = Porridge('id1:key1')
