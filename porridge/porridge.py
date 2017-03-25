@@ -1,25 +1,20 @@
-from __future__ import absolute_import, division, print_function
-
-import base64
 import contextlib
 import os
 import re
 
-from .exceptions import VerifyMismatchError
-from .low_level import (
+from argon2.low_level import (
     ARGON2_VERSION,
     Type,
     core,
     ffi,
-    hash_secret,
     lib,
-    verify_secret,
 )
-from ._utils import _check_types
 
+from .utils import check_types, ensure_bytes, b64_decode_raw, b64_encode_raw
 
+# TODO: Compute these dynamically for the target environment. Prefer magic to people having to configure cryptographic parameters.
 DEFAULT_RANDOM_SALT_LENGTH = 16
-DEFAULT_HASH_LENGTH = 16
+DEFAULT_HASH_LENGTH = 32
 DEFAULT_TIME_COST = 2
 DEFAULT_MEMORY_COST = 512
 DEFAULT_PARALLELISM = 2
@@ -44,16 +39,7 @@ ENCODED_HASH_RE = re.compile(r''.join([
 )
 
 
-def _ensure_bytes(s, encoding):
-    """
-    Ensure *s* is a bytes string.  Encode using *encoding* if it isn't.
-    """
-    if isinstance(s, bytes):
-        return s
-    return s.encode(encoding)
-
-
-class PasswordHasher(object):
+class Porridge(object):
     r"""
     High level class to hash passwords with sensible defaults.
 
@@ -98,7 +84,7 @@ class PasswordHasher(object):
         encoding="utf-8",
         secrets=None,
     ):
-        e = _check_types(
+        e = check_types(
             time_cost=(time_cost, int),
             memory_cost=(memory_cost, int),
             parallelism=(parallelism, int),
@@ -125,7 +111,7 @@ class PasswordHasher(object):
             self.keyid = None
 
 
-    def hash(self, password):
+    def boil(self, password):
         """
         Hash *password* and return an encoded hash.
 
@@ -139,8 +125,8 @@ class PasswordHasher(object):
         salt = ('a' * self.salt_len).encode('utf-8')#os.urandom(self.salt_len)
         context_params = dict(
             salt=salt,
-            password=_ensure_bytes(password, self.encoding),
-            secret=_ensure_bytes(self.secret, self.encoding) if self.secret else None,
+            password=ensure_bytes(password, self.encoding),
+            secret=ensure_bytes(self.secret, self.encoding) if self.secret else None,
             data=self.keyid,
             time_cost=self.time_cost,
             memory_cost=self.memory_cost,
@@ -155,9 +141,9 @@ class PasswordHasher(object):
         return self._encode(raw_hash, salt)
 
 
-    def verify(self, hash, password):
+    def verify(self, password, encoded):
         """
-        Verify that *password* matches *hash*.
+        Verify that *password* matches *encoded*.
 
         :param unicode hash: An encoded hash as returned from
             :meth:`PasswordHasher.hash`.
@@ -177,11 +163,12 @@ class PasswordHasher(object):
             Raise :exc:`~argon2.exceptions.VerifyMismatchError` on mismatches
             instead of its more generic superclass.
         """
-        assert len(hash) < 1024 # Ensure we don't DDoS ourselves if the database holds corrupt values
+        assert len(encoded) < 1024 # Ensure we don't DDoS ourselves if the database holds corrupt values
         # TODO: Ensure hashed values are maximum double of what we're configured with
         # TODO: Test migrating parameters
-        match = ENCODED_HASH_RE.match(hash)
-        assert match, 'Hashed string is on unknown format: %s' % hash
+        # encoded = ensure_bytes(encoded, self.encoding)
+        match = ENCODED_HASH_RE.match(encoded)
+        assert match, 'Encoded password is on unknown format: %s' % encoded
         version = match.group('version')
         if version:
             version = int(version)
@@ -189,8 +176,8 @@ class PasswordHasher(object):
             # Default to the old version as only ARGON2_VERSION_13 includes it in the encoded string
             version = lib.ARGON2_VERSION_10
 
-        salt = _b64_decode_raw(match.group('salt'))
-        raw_hash = _b64_decode_raw(match.group('hash'))
+        salt = b64_decode_raw(match.group('salt'))
+        raw_hash = b64_decode_raw(match.group('hash'))
         time_cost = int(match.group('time_cost'))
         memory_cost = int(match.group('memory_cost'))
         parallelism = int(match.group('parallelism'))
@@ -200,7 +187,7 @@ class PasswordHasher(object):
             memory_cost=memory_cost,
             parallelism=parallelism,
             salt=salt,
-            password=_ensure_bytes(password, self.encoding),
+            password=ensure_bytes(password, self.encoding),
             version=version,
         )
 
@@ -215,10 +202,7 @@ class PasswordHasher(object):
         with argon2_context(**context_params) as ctx:
             result = lib.argon2i_verify_ctx(ctx, raw_hash)
 
-        if result != lib.ARGON2_OK:
-            raise VerifyMismatchError()
-
-        return True
+        return result == lib.ARGON2_OK
 
 
     def _encode(self, raw_hash, salt):
@@ -227,20 +211,15 @@ class PasswordHasher(object):
             t_cost=self.time_cost,
             m_cost=self.memory_cost,
             parallelism=self.parallelism,
-            salt=base64.b64encode(salt).rstrip('='),
-            hash=base64.b64encode(raw_hash).rstrip('='),
+            salt=b64_encode_raw(salt),
+            hash=b64_encode_raw(raw_hash),
             version=ARGON2_VERSION,
             keyid='',
         )
         if self.keyid:
             format_args['keyid'] = ',keyid={}'.format(self.keyid)
-        return (u'${algo}$v={version}$m={m_cost},t={t_cost},p={parallelism}{keyid}'
-            u'${salt}${hash}').format(**format_args)
-
-
-def _b64_decode_raw(encoded):
-    '''Decode basse64 string without padding'''
-    return base64.b64decode(encoded + (b'='*((4 - len(encoded) % 4) % 4)))
+        return ('${algo}$v={version}$m={m_cost},t={t_cost},p={parallelism}{keyid}'
+            '${salt}${hash}').format(**format_args)
 
 
 @contextlib.contextmanager
