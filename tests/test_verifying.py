@@ -12,8 +12,7 @@ bytes_and_unicode_password = pytest.mark.parametrize("password", [
 
 
 @bytes_and_unicode_password
-@pytest.mark.skip
-def test_verify(porridge, password):
+def test_verify(password):
     """
     Verification works with unicode and bytes.
     """

@@ -186,6 +186,7 @@ class Porridge(object):
             time_cost=time_cost,
             memory_cost=memory_cost,
             parallelism=parallelism,
+            hash_len=len(raw_hash),
             salt=salt,
             password=ensure_bytes(password, self.encoding),
             version=version,
