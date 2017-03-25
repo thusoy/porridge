@@ -5,13 +5,10 @@ from porridge import Porridge, MissingKeyError
 from porridge.utils import ensure_bytes
 
 
-bytes_and_unicode_password = pytest.mark.parametrize("password", [
-    u"pässword".encode("latin1"),
-    u"pässword",
-])
-
-
-@bytes_and_unicode_password
+@pytest.mark.parametrize('password', (
+    "pässword".encode("latin-1"),
+    "pässword",
+))
 def test_verify(password):
     """
     Verification works with unicode and bytes.
@@ -25,8 +22,7 @@ def test_verify(password):
     assert porridge.verify(password, encoded)
 
 
-def test_verify_self(porridge):
-    password = 'password'
+def test_verify_self(porridge, password):
     assert porridge.verify(password, porridge.boil(password))
 
 
@@ -34,7 +30,6 @@ def test_invalid_password(porridge):
     assert porridge.verify('pass1', porridge.boil('pass2')) == False
 
 
-@bytes_and_unicode_password
 def test_attacker_cant_verify_without_secret(password):
     our_porridge = Porridge('id1:key1')
     attacker_porridge = Porridge('otherid:otherkey')
