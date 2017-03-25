@@ -128,7 +128,6 @@ class Porridge(object):
             salt=salt,
             password=ensure_bytes(password, self.encoding),
             secret=ensure_bytes(self.secret, self.encoding) if self.secret else None,
-            data=self.keyid,
             time_cost=self.time_cost,
             memory_cost=self.memory_cost,
             parallelism=self.parallelism,
@@ -201,9 +200,7 @@ class Porridge(object):
                 raise MissingKeyError(keyid)
             assert secret, 'No key for keyid %s' % keyid
             context_params['secret'] = secret
-            context_params['data'] = keyid
 
-        # print('verifying with parameters %s' % context_params)
         with argon2_context(**context_params) as ctx:
             result = lib.argon2i_verify_ctx(ctx, raw_hash)
 
