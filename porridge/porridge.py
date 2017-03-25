@@ -200,38 +200,20 @@ class Porridge(object):
         assert len(encoded) < 1024 # Ensure we don't DDoS ourselves if the database holds corrupt values
         # TODO: Ensure hashed values are maximum double of what we're configured with
         # TODO: Test migrating parameters
-        # encoded = ensure_bytes(encoded, self.encoding)
-        match = ENCODED_HASH_RE.match(encoded)
-        assert match, 'Encoded password is on unknown format: %s' % encoded
-        version = match.group('version')
-        if version:
-            version = int(version)
-        else:
-            # Default to the old version as only ARGON2_VERSION_13 includes it in the encoded string
-            version = lib.ARGON2_VERSION_10
+        context_params = parse_encoded(encoded)
+        raw_hash = context_params.pop('raw_hash')
 
-        salt = b64_decode_raw(match.group('salt'))
-        raw_hash = b64_decode_raw(match.group('hash'))
-        time_cost = int(match.group('time_cost'))
-        memory_cost = int(match.group('memory_cost'))
-        parallelism = int(match.group('parallelism'))
-
-        context_params = dict(
-            time_cost=time_cost,
-            memory_cost=memory_cost,
-            parallelism=parallelism,
+        context_params.update(dict(
             hash_len=len(raw_hash),
-            salt=salt,
             password=self._ensure_bytes(password),
-            version=version,
-        )
+        ))
 
-        keyid = match.group('keyid')
+        keyid = context_params.get('keyid')
         if keyid:
-            binary_keyid = keyid.encode('utf-8')
-            secret = self.secret_map.get(binary_keyid)
+            del context_params['keyid']
+            secret = self.secret_map.get(keyid)
             if not secret:
-                raise MissingKeyError(keyid)
+                raise MissingKeyError(keyid.decode('utf-8'))
             context_params['secret'] = secret
 
         with argon2_context(**context_params) as ctx:
@@ -244,6 +226,41 @@ class Porridge(object):
         else:
             error_message = argon2_error_message(result)
             raise PorridgeError(error_message)
+
+
+    def needs_update(self, encoded):
+        """
+        Check if the parameters in *encoded* are old and the password should be
+        re-boiled.
+
+        :param unicode encoded: An encoded password as returned from
+            :meth:`Porridge.boil`.
+
+        :rtype: bool
+        """
+        parsed = parse_encoded(encoded)
+        if parsed['version'] < ARGON2_VERSION:
+            return True
+
+        if parsed['parallelism'] < self.parallelism:
+            return True
+
+        if parsed['memory_cost'] < self.memory_cost:
+            return True
+
+        if parsed['time_cost'] < self.time_cost:
+            return True
+
+        if len(parsed['salt']) < self.salt_len:
+            return True
+
+        if len(parsed['raw_hash']) < self.hash_len:
+            return True
+
+        if parsed.get('keyid') != self.keyid:
+            return True
+
+        return False
 
 
     def _ensure_bytes(self, s):
@@ -265,6 +282,38 @@ class Porridge(object):
                 version=ARGON2_VERSION,
                 keyid=self.keyid.decode('utf-8'),
             )
+
+
+def parse_encoded(encoded):
+    match = ENCODED_HASH_RE.match(encoded)
+    assert match, 'Encoded password is on unknown format: %s' % encoded
+    version = match.group('version')
+    if version:
+        version = int(version)
+    else:
+        # Default to the old version as only ARGON2_VERSION_13 includes it in the encoded string
+        version = lib.ARGON2_VERSION_10
+
+    salt = b64_decode_raw(match.group('salt'))
+    raw_hash = b64_decode_raw(match.group('hash'))
+    time_cost = int(match.group('time_cost'))
+    memory_cost = int(match.group('memory_cost'))
+    parallelism = int(match.group('parallelism'))
+
+    parsed = dict(
+        time_cost=time_cost,
+        memory_cost=memory_cost,
+        parallelism=parallelism,
+        raw_hash=raw_hash,
+        salt=salt,
+        version=version,
+    )
+
+    keyid = match.group('keyid')
+    if keyid:
+        parsed['keyid'] = keyid.encode('utf-8')
+
+    return parsed
 
 
 def argon2_error_message(error_code):

@@ -67,14 +67,49 @@ Some guiding principles for this project:
 - Migrating from existing solutions should be easy
 
 
+Maintenance
+-----------
+
+Keeping this running over an extended period requires two things:
+    - Adding new secrets regularly (twice a year is probably fine), and whenever you suspect a breach
+    - Using `needs_update()` to store new encodes where the password was stored with old parameters
+
+The first is to ensure that if your servers at one point is compromised, future passwords are not impacted. 
+
+The second point ensures that every time one of your users log in, the parameters their existing encoded password is stored under are still strong and the secret current, otherwise it'll be re-stored.
+
+The only thing you need to do this is to check `needs_update()` after a password has been verified, and to store the updated one if that's the case:
+
+```python
+import os
+from porridge import Porridge
+
+porridge = Porridge(os.environ['PORRIDGE_SECRETS'])
+
+password = ... # get this from the user
+old_encoded_password = ... # Get this from your database
+
+if porridge.verify(password, old_encoded_password):
+    print('Success!')
+    if porridge.needs_update(old_encoded_password):
+        # update the password in the database
+        new_encoded_password = porridge.boil(password)
+        print('Storing new encoded password to database')
+else:
+    print('Fail!')
+```
+
+The default parameters will be bumped regularly with new releases of porridge, thus as long as you install updates this should keep everything fresh.
+
+
 FAQ
 ---
 
-*Q: I notice the word "hash" isn't used by porridge, why?*
+*Q: I notice the word "hash" isn't used much by porridge, why?*
 A: Because it's too easy to get stuff wrong when communicated to people who are not cryptographers, which include most of us. Experienced cryptographers do a mental translation of "hash" to "memory-hard key stretching" whenever they're in a password context, but the rest of us don't. Thus it's too easy for non-cryptographers to write password storage solutions that either store passwords in plaintext, or just use an actual "hash", leading to puppies dying left and right. Thus for porridge, passwords are stored in "encoded form", and to get a password in encoded form you "boil" it. If non-cryptographers hear that they're supposed to boil passwords, any decent search engine will ensure they end up with a very robust solution.
 
 *Q: How do I migrate to porridge from pbkdf2/bcrypt/scrypt/plain argon2?*
-A: Add a new column in your database to store the new encoded passwords, add porridge and boil passwords with it in addition to your existing scheme and store them to the new column. When verifying, verify with both your existing scheme and porridge if there's anything in the new column. When you deem that few enough users haven't gotten their passwords encoded by porridge yet, drop the old password column and stop using the old scheme. The users who hasn't gotten new encoded passwords will be forced through password reset, but otherwise no one will notice any difference.
+A: Add a new column in your database to store the new encoded passwords, add porridge and boil passwords with it in addition to your existing scheme and store them to the new column. When verifying, verify with both your existing scheme and porridge if there's anything in the new column. When you deem that few enough users haven't gotten their passwords encoded by porridge yet, drop the old password column and stop using the old scheme. The users who hasn't gotten new encoded passwords will be forced through password reset, but otherwise no one will notice any difference. If you are already using argon2 but without server-side secrets, porridge can dropped in directly.
 
 
 Alternatives
