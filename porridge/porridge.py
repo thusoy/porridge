@@ -43,30 +43,22 @@ ENCODED_HASH_RE = re.compile(r''.join([
 
 class Porridge(object):
     r"""
-    High level class to hash passwords with sensible defaults.
+    Helper class to boil passwords with sensible defaults and server-side
+    secrets.
 
-    Uses *always* Argon2\ **i** and a random salt_.
-
-    The reason for this being a class is both for convenience to carry
-    parameters and to verify the parameters only *once*. Any unnecessary
-    slowdown when hashing is a tangible advantage for a brute force attacker.
-
-    :param str secrets: A comma-separated string of keyid:key pairs that will be used for
-        keyed hashing. The first element in the list will be used to boil new passwords,
-        the others to verify old ones.
+    :param str secrets: A comma-separated string of *keyid:key* pairs that will
+        be used as server-side secrets. The first element in the list will be
+        used to boil new passwords, the others to verify old ones.
     :param int time_cost: Defines the amount of computation realized and
         therefore the execution time, given in number of iterations.
     :param int memory_cost: Defines the memory usage, given in kibibytes_.
-    :param int parallelism: Defines the number of parallel threads (*changes*
-        the resulting hash value).
-    :param int hash_len: Length of the hash in bytes.
+    :param int parallelism: Defines the number of threads used
+    :param int hash_len: Length of the raw hash in bytes.
     :param int salt_len: Length of random salt to be generated for each
         password.
-    :param str encoding: The Argon2 C library expects bytes.  So if
-        :meth:`hash` or :meth:`verify` are passed an unicode string, it will be
-        encoded using this encoding.
-
-    .. versionadded:: 16.0.0
+    :param str encoding: Boiling is always performed on bytes, thus if unicode
+        strings are given to either :meth:`boil` of :meth:`verify` this encoding
+        will be used to encode the password to bytes.
 
     .. _salt: https://en.wikipedia.org/wiki/Salt_(cryptography)
     .. _kibibytes: https://en.wikipedia.org/wiki/Binary_prefix#kibi
@@ -136,7 +128,8 @@ class Porridge(object):
         :param password: Password to boil.
         :type password: ``bytes`` or ``unicode``
 
-        :raises argon2.exceptions.HashingError: If hashing fails.
+        :raises porridge.PorridgeError: If verification fails to complete due
+            to not being able to spawn enough threads or allocate enough memory.
 
         :rtype: unicode
         """
@@ -172,23 +165,16 @@ class Porridge(object):
         """
         Verify that *password* matches *encoded*.
 
-        :param unicode hash: An encoded hash as returned from
-            :meth:`PasswordHasher.hash`.
         :param password: The password to verify.
         :type password: ``bytes`` or ``unicode``
+        :param unicode encoded: An encoded password as returned from
+            :meth:`Porridge.boil`.
 
-        :raises argon2.exceptions.VerifyMismatchError: If verification fails
-            because *hash* is not valid for *secret* of *type*.
-        :raises argon2.exceptions.VerificationError: If verification fails for
-            other reasons.
+        :raises porridge.PorridgeError: If verification fails to complete due
+            to not being able to spawn enough threads or allocate enough memory.
 
-        :return: ``True`` on success, raise
-            :exc:`~argon2.exceptions.VerificationError` otherwise.
+        :return: ``True`` if *password* is valid, otherwise ``False``.
         :rtype: bool
-
-        .. versionchanged:: 16.1.0
-            Raise :exc:`~argon2.exceptions.VerifyMismatchError` on mismatches
-            instead of its more generic superclass.
         """
         e = check_types(
             password=(password, (str, bytes)),
@@ -199,7 +185,6 @@ class Porridge(object):
 
         assert len(encoded) < 1024 # Ensure we don't DDoS ourselves if the database holds corrupt values
         # TODO: Ensure hashed values are maximum double of what we're configured with
-        # TODO: Test migrating parameters
         context_params = parse_encoded(encoded)
         raw_hash = context_params.pop('raw_hash')
 
