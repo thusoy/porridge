@@ -221,9 +221,20 @@ class Porridge(object):
             keyid='',
         )
         if self.keyid:
-            format_args['keyid'] = ',keyid={}'.format(self.keyid)
+            format_args['keyid'] = ',keyid={}'.format(self.keyid.decode(self.encoding))
         return ('${algo}$v={version}$m={m_cost},t={t_cost},p={parallelism}{keyid}'
             '${salt}${hash}').format(**format_args)
+
+
+def argon2_error_message(error_code):
+    return ffi.string(lib.argon2_error_message(error_code)).decode('utf-8')
+
+
+def is_operational_error(error_code):
+    return error_code in set([
+        lib.ARGON2_THREAD_FAIL,
+        lib.ARGON2_MEMORY_ALLOCATION_ERROR,
+    ])
 
 
 @contextlib.contextmanager
@@ -231,7 +242,6 @@ def argon2_context(
         password=None, # bytes
         salt=None,
         secret=None,
-        data=None,
         hash_len=DEFAULT_HASH_LENGTH,
         time_cost=DEFAULT_TIME_COST,
         memory_cost=DEFAULT_MEMORY_COST,
@@ -242,25 +252,21 @@ def argon2_context(
     csalt = ffi.new("uint8_t[]", salt)
     cout = ffi.new("uint8_t[]", hash_len)
     cpwd = ffi.new("uint8_t[]", password)
+
     if secret:
         csecret = ffi.new("uint8_t[]", secret)
         secret_len = len(secret)
     else:
         csecret = ffi.NULL
         secret_len = 0
-    if data:
-        cdata = ffi.new("uint8_t[]", data)
-        data_len = len(data)
-    else:
-        cdata = ffi.NULL
-        data_len = 0
+
     ctx = ffi.new("argon2_context *", dict(
             version=version,
             out=cout, outlen=hash_len,
             pwd=cpwd, pwdlen=len(password),
             salt=csalt, saltlen=len(salt),
             secret=csecret, secretlen=secret_len,
-            ad=cdata, adlen=data_len,
+            ad=ffi.NULL, adlen=0,
             t_cost=time_cost,
             m_cost=memory_cost,
             lanes=parallelism, threads=parallelism,
