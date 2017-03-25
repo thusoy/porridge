@@ -11,7 +11,7 @@ from argon2.low_level import (
 )
 
 from .utils import check_types, ensure_bytes, b64_decode_raw, b64_encode_raw
-from .exceptions import PorridgeError, MissingKeyError
+from .exceptions import PorridgeError, MissingKeyError, ParameterError
 
 # TODO: Compute these dynamically for the target environment. Prefer magic to people having to configure cryptographic parameters.
 DEFAULT_RANDOM_SALT_LENGTH = 16
@@ -86,6 +86,7 @@ class Porridge(object):
         encoding="utf-8",
     ):
         e = check_types(
+            secrets=(secrets, str),
             time_cost=(time_cost, int),
             memory_cost=(memory_cost, int),
             parallelism=(parallelism, int),
@@ -95,6 +96,7 @@ class Porridge(object):
         )
         if e:
             raise TypeError(e)
+
         self.time_cost = time_cost
         self.memory_cost = memory_cost
         self.parallelism = parallelism
@@ -113,6 +115,16 @@ class Porridge(object):
                 self.secret = secret
                 self.keyid = keyid
             self.secret_map[keyid] = secret
+
+        self._self_check()
+
+
+    def _self_check(self):
+        """
+        Perform a single run of boiling to ensure we have a valid
+        combination of parameters.
+        """
+        self.boil('dummy')
 
 
     def _ensure_bytes(self, s):
@@ -143,9 +155,13 @@ class Porridge(object):
         )
         with argon2_context(**context_params) as ctx:
             result = core(ctx, Type.I.value)
+
             if result != lib.ARGON2_OK:
-                error_message = ffi.string(lib.argon2_error_message(result)).decode('utf-8')
-                raise PorridgeError(error_message)
+                error_message = argon2_error_message(result)
+                if is_operational_error(result):
+                    raise PorridgeError(error_message)
+                else:
+                    raise ParameterError(error_message)
 
             raw_hash = bytes(ffi.buffer(ctx.out, ctx.outlen))
         return self._encode(raw_hash, salt)
@@ -214,7 +230,13 @@ class Porridge(object):
         with argon2_context(**context_params) as ctx:
             result = lib.argon2i_verify_ctx(ctx, raw_hash)
 
-        return result == lib.ARGON2_OK
+        if result == lib.ARGON2_OK:
+            return True
+        elif result == lib.ARGON2_VERIFY_MISMATCH:
+            return False
+        else:
+            error_message = argon2_error_message(result)
+            raise PorridgeError(error_message)
 
 
     def _encode(self, raw_hash, salt):
