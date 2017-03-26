@@ -1,4 +1,12 @@
 import base64
+import sys
+
+PY2 = sys.version_info < (3, 0, 0)
+
+if PY2:
+    string_types = (str, unicode)
+else:
+    string_types = (str,)
 
 
 def ensure_bytes(s, encoding):

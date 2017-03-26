@@ -10,7 +10,8 @@ from argon2.low_level import (
     lib,
 )
 
-from .utils import check_types, ensure_bytes, b64_decode_raw, b64_encode_raw
+from .utils import (check_types, ensure_bytes, b64_decode_raw, b64_encode_raw,
+    string_types)
 from .exceptions import PorridgeError, MissingKeyError, ParameterError
 
 # These parameters should be increased regularly to keep boiling slow
@@ -79,13 +80,13 @@ class Porridge(object):
         encoding="utf-8",
     ):
         e = check_types(
-            secrets=(secrets, str),
+            secrets=(secrets, string_types),
             time_cost=(time_cost, int),
             memory_cost=(memory_cost, int),
             parallelism=(parallelism, int),
             hash_len=(hash_len, int),
             salt_len=(salt_len, int),
-            encoding=(encoding, str),
+            encoding=(encoding, string_types),
         )
         if e:
             raise TypeError(e)
@@ -133,7 +134,7 @@ class Porridge(object):
 
         :rtype: unicode
         """
-        e = check_types(password=(password, (str, bytes)))
+        e = check_types(password=(password, string_types + (bytes,)))
         if e:
             raise TypeError(e)
 
@@ -177,8 +178,8 @@ class Porridge(object):
         :rtype: bool
         """
         e = check_types(
-            password=(password, (str, bytes)),
-            encoded=(encoded, str),
+            password=(password, string_types + (bytes,)),
+            encoded=(encoded, string_types),
         )
         if e:
             raise TypeError(e)

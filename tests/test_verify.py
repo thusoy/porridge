@@ -1,3 +1,7 @@
+# coding: utf-8
+
+from __future__ import unicode_literals
+
 import pytest
 import six
 
@@ -42,7 +46,7 @@ def test_verify_invalid_password_type(porridge):
     with pytest.raises(TypeError) as exception:
         porridge.verify(1, '')
 
-    assert exception.value.args[0] == "'password' must be a str or bytes (got int)."
+    assert exception.value.args[0].startswith("'password' must be a str")
 
 
 @pytest.mark.parametrize('password,encoded', (

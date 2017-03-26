@@ -1,3 +1,7 @@
+# coding: utf-8
+
+from __future__ import unicode_literals
+
 import pytest
 
 from porridge.utils import ensure_bytes, b64_decode_raw, b64_encode_raw
@@ -16,7 +20,7 @@ def test_ensure_bytes_with_bytes():
     """
     Bytes are just returned.
     """
-    s = u"föö".encode("utf-8")
+    s = "föö".encode("utf-8")
 
     rv = ensure_bytes(s, "doesntmatter")
 
