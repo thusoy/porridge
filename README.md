@@ -1,5 +1,6 @@
 # porridge
 
+<img align="right" src="https://raw.github.com/thusoy/porridge/master/docs/logo.png">
 Simple, strong and standardized keyed password storage.
 
 Keyed password storage utilizes server-side secrets to ensure passwords cannot be brute-forced offline if the encoded passwords are leaked. A leak could happen through a SQL injection or a compromised database backup, or a host of other sadly quite common webapp vulnerabilities.
