@@ -14,3 +14,9 @@ def test_invalid_parameter_types():
     with pytest.raises(TypeError) as exception:
         Porridge(1)
     assert exception.value.args[0].startswith("'secrets' must be a str")
+
+
+def test_invalid_parameter_types_int():
+    with pytest.raises(TypeError) as exception:
+        Porridge('key:secret', time_cost='hello')
+    assert exception.value.args[0].startswith("'time_cost' must be a int")

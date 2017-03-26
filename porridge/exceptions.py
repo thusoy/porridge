@@ -34,3 +34,11 @@ class ParameterError(ValueError):
     This is raised at construction time instead of at boiling time to ensure
     fail-fast behavior.
     """
+
+
+class EncodedPasswordError(ValueError):
+    """
+    Raised if :meth:`verify` is given an encoded password that's either on an
+    invalid format or has parameter significantly greater than what we're
+    currently configured with.
+    """

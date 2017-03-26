@@ -1,2 +1,7 @@
 from .porridge import Porridge
-from .exceptions import PorridgeError, MissingKeyError, ParameterError
+from .exceptions import (
+    EncodedPasswordError,
+    MissingKeyError,
+    ParameterError,
+    PorridgeError,
+)

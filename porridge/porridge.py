@@ -10,9 +10,19 @@ from argon2.low_level import (
     lib,
 )
 
-from .utils import (check_types, ensure_bytes, b64_decode_raw, b64_encode_raw,
-    string_types)
-from .exceptions import PorridgeError, MissingKeyError, ParameterError
+from .utils import (
+    b64_decode_raw,
+    b64_encode_raw,
+    check_types,
+    ensure_bytes,
+    string_types,
+)
+from .exceptions import (
+    EncodedPasswordError,
+    MissingKeyError,
+    ParameterError,
+    PorridgeError,
+)
 
 # These parameters should be increased regularly to keep boiling slow
 # on new hardware
@@ -26,18 +36,17 @@ DEFAULT_FLAGS = lib.ARGON2_FLAG_CLEAR_PASSWORD | lib.ARGON2_FLAG_CLEAR_SECRET
 # This regex validates the spec from
 # https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 ENCODED_HASH_RE = re.compile(r''.join([
-    # TODO: Validate max lengths of fields
         r'^\$argon2i\$',
-        r'(?:v=(?P<version>[0-9]+)\$)?',
+        r'(?:v=(?P<version>[0-9]{1,3})\$)?',
         r''.join([
             r'm=(?P<memory_cost>[0-9]{1,10})',
             r',t=(?P<time_cost>[0-9]{1,10})',
             r',p=(?P<parallelism>[0-9]{1,3})',
-            r'(?:,keyid=(?P<keyid>[a-zA-Z0-9+/]+))?', # optional
-            r'(?:,data=(?P<data>[a-zA-Z0-9+/]+))?', # optional, unused
+            r'(?:,keyid=(?P<keyid>[a-zA-Z0-9+/]{0,11}))?', # optional
+            r'(?:,data=(?P<data>[a-zA-Z0-9+/]{0,43}))?', # optional, unused
         ]),
-        r'\$(?P<salt>[a-zA-Z0-9+/]+)\$',
-        r'(?P<hash>[a-zA-Z0-9+/]+)',
+        r'\$(?P<salt>[a-zA-Z0-9+/]{11,64})\$',
+        r'(?P<hash>[a-zA-Z0-9+/]{16,86})',
     ]) + r'$'
 )
 
@@ -184,7 +193,10 @@ class Porridge(object):
         if e:
             raise TypeError(e)
 
-        assert len(encoded) < 1024 # Ensure we don't DDoS ourselves if the database holds corrupt values
+        if len(encoded) > 265:
+             # Ensure we don't DDoS ourselves if the database holds corrupt values
+            raise EncodedPasswordError('Encoded password exceeds maximum length of '
+                '265, was {length}'.format(length=len(encoded)))
         # TODO: Ensure hashed values are maximum double of what we're configured with
         context_params = parse_encoded(encoded)
         raw_hash = context_params.pop('raw_hash')
@@ -272,7 +284,8 @@ class Porridge(object):
 
 def parse_encoded(encoded):
     match = ENCODED_HASH_RE.match(encoded)
-    assert match, 'Encoded password is on unknown format: %s' % encoded
+    if not match:
+        raise EncodedPasswordError('Encoded password is on unknown format', encoded)
     version = match.group('version')
     if version:
         version = int(version)

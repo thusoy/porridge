@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import pytest
 import six
 
-from porridge import Porridge, MissingKeyError
+from porridge import Porridge, MissingKeyError, EncodedPasswordError
 from porridge.utils import ensure_bytes
 
 
@@ -56,3 +56,12 @@ def test_verify_invalid_password_type(porridge):
 ))
 def test_verify_legacy_passwords_without_secret(porridge, password, encoded):
     assert porridge.verify(password, encoded)
+
+
+@pytest.mark.parametrize('encoded', (
+    'definitely not a valid',
+    '$argon2i$m=8,t=1,p=1$bXlzYWx0eXNhbHQ$nz8csvIXGASHCkUia+K4Zg' + 'a' * 207,
+))
+def test_verify_invalid_encode(porridge, encoded):
+    with pytest.raises(EncodedPasswordError):
+        porridge.verify('password', encoded)
