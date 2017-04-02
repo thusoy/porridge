@@ -5,8 +5,9 @@ set -eu
 main () {
     initialize_submodules
     create_virtualenv
-    install_requirements
+    install_cffi
     build_libargon2
+    install_requirements
 }
 
 initialize_submodules () {
@@ -14,12 +15,16 @@ initialize_submodules () {
     git submodule update
 }
 
-build_libargon2 () {
-    ./venv/bin/python setup.py build
-}
-
 create_virtualenv () {
     virtualenv venv -p $(which python3)
+}
+
+install_cffi () {
+    ./venv/bin/pip install cffi
+}
+
+build_libargon2 () {
+    ./venv/bin/python setup.py build
 }
 
 install_requirements () {
