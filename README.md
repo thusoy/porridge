@@ -1,4 +1,4 @@
-# porridge
+# porridge [![Build Status](https://travis-ci.org/thusoy/porridge.svg?branch=master)](https://travis-ci.org/thusoy/porridge)
 
 Simple, strong and standardized keyed password storage.
 
