@@ -1,5 +1,6 @@
 import contextlib
 import os
+import sys
 try:
     import resource
     HAS_RESOURCE = True
@@ -11,8 +12,10 @@ import pytest
 from porridge import Porridge, PorridgeError
 
 SKIP_THREADING_TESTS = not HAS_RESOURCE or os.environ.get('WITH_THREADING_TESTS', '0') == '0'
+SKIP_MEMORY_ALLOC_TESTS = sys.maxsize <= 2**32
 
 
+@pytest.mark.skipif(SKIP_MEMORY_ALLOC_TESTS, reason='Skipping on 32bit platforms')
 def test_operational_error_memory_allocation_error_on_boil():
     '''Tries to allocate 1TB for password hashing, which is hopefully more
     than what is available on any machine that tries to run the tests, or this
@@ -23,6 +26,7 @@ def test_operational_error_memory_allocation_error_on_boil():
     assert 'Memory allocation' in exception.value.args[0]
 
 
+@pytest.mark.skipif(SKIP_MEMORY_ALLOC_TESTS, reason='Skipping on 32bit platforms')
 def test_operational_error_memory_allocation_error_on_verify(porridge):
     '''Tries to allocate 1TB for password hashing, which is hopefully more
     than what is available on any machine that tries to run the tests, or this
