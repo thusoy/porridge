@@ -8,11 +8,11 @@ from porridge import Porridge, MissingKeyError, EncodedPasswordError
 from porridge.utils import ensure_bytes
 
 
-@pytest.mark.parametrize('password', (
+@pytest.mark.parametrize('test_password', (
     "pässword".encode("latin-1"),
     "pässword",
 ))
-def test_verify(password):
+def test_verify(test_password):
     """
     Verification works with unicode and bytes.
     """
@@ -22,7 +22,7 @@ def test_verify(password):
         "bL/lLsegFKTuR+5vVyA8tA$VKz5CHavCtFOL1N5TIXWSA"
     )
 
-    assert porridge.verify(password, encoded)
+    assert porridge.verify(test_password, encoded)
 
 
 def test_verify_self(porridge, password):
