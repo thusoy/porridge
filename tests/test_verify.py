@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import pytest
-import six
 
 from porridge import Porridge, MissingKeyError, EncodedPasswordError
 from porridge.utils import ensure_bytes
