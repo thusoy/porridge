@@ -1,12 +1,16 @@
-import os
-import resource
 import contextlib
+import os
+try:
+    import resource
+    HAS_RESOURCE = True
+except ImportError:
+    HAS_RESOURCE = False
 
 import pytest
 
 from porridge import Porridge, PorridgeError
 
-SKIP_THREADING_TESTS = os.environ.get('WITH_THREADING_TESTS', '0') == '0'
+SKIP_THREADING_TESTS = not HAS_RESOURCE or os.environ.get('WITH_THREADING_TESTS', '0') == '0'
 
 
 def test_operational_error_memory_allocation_error_on_boil():
