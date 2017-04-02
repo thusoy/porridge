@@ -29,9 +29,7 @@ ffi.set_source(
 
 ffi.cdef("""\
 typedef enum Argon2_type {
-    Argon2_d = ...,
     Argon2_i = ...,
-    Argon2_id = ...,
 } argon2_type;
 typedef enum Argon2_version {
     ARGON2_VERSION_10 = ...,
@@ -39,19 +37,7 @@ typedef enum Argon2_version {
     ARGON2_VERSION_NUMBER = ...
 } argon2_version;
 
-int argon2_hash(const uint32_t t_cost, const uint32_t m_cost,
-                const uint32_t parallelism, const void *pwd,
-                const size_t pwdlen, const void *salt,
-                const size_t saltlen, void *hash,
-                const size_t hashlen, char *encoded,
-                const size_t encodedlen, argon2_type type,
-                const uint32_t version);
-
-int argon2_verify(const char *encoded, const void *pwd,
-                  const size_t pwdlen, argon2_type type);
-
 const char *argon2_error_message(int error_code);
-
 
 typedef int (*allocate_fptr)(uint8_t **memory, size_t bytes_to_allocate);
 typedef void (*deallocate_fptr)(uint8_t *memory, size_t bytes_to_allocate);
@@ -173,11 +159,6 @@ typedef enum Argon2_ErrorCodes {
 #define ARGON2_MAX_SALT_LENGTH ...
 #define ARGON2_MIN_SECRET ...
 #define ARGON2_MAX_SECRET ...
-
-uint32_t argon2_encodedlen(uint32_t t_cost, uint32_t m_cost,
-                           uint32_t parallelism, uint32_t saltlen,
-                           uint32_t hashlen, argon2_type type);
-
 """)
 
 if __name__ == '__main__':
