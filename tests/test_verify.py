@@ -3,17 +3,16 @@
 from __future__ import unicode_literals
 
 import pytest
-import six
 
 from porridge import Porridge, MissingKeyError, EncodedPasswordError
 from porridge.utils import ensure_bytes
 
 
-@pytest.mark.parametrize('password', (
+@pytest.mark.parametrize('test_password', (
     "pässword".encode("latin-1"),
     "pässword",
 ))
-def test_verify(password):
+def test_verify(test_password):
     """
     Verification works with unicode and bytes.
     """
@@ -23,7 +22,7 @@ def test_verify(password):
         "bL/lLsegFKTuR+5vVyA8tA$VKz5CHavCtFOL1N5TIXWSA"
     )
 
-    assert porridge.verify(password, encoded)
+    assert porridge.verify(test_password, encoded)
 
 
 def test_verify_self(porridge, password):
@@ -49,13 +48,14 @@ def test_verify_invalid_password_type(porridge):
     assert exception.value.args[0].startswith("'password' must be a str")
 
 
-@pytest.mark.parametrize('password,encoded', (
-    ('password', '$argon2i$v=19$m=512,t=2,p=2$Vr7zN80DmEZdRQcMGeV2lA$/fcYY5wcLE9YR4ttKuwshw'),
-    ('password', '$argon2i$v=16$m=8,t=1,p=1$bXlzYWx0eXNhbHQ$nz8csvIXGASHCkUia+K4Zg'),
-    ('password', '$argon2i$m=8,t=1,p=1$bXlzYWx0eXNhbHQ$nz8csvIXGASHCkUia+K4Zg'),
+@pytest.mark.parametrize('encoded', (
+    # these are all encoded versions of 'password'
+    '$argon2i$v=19$m=512,t=2,p=2$Vr7zN80DmEZdRQcMGeV2lA$/fcYY5wcLE9YR4ttKuwshw',
+    '$argon2i$v=16$m=8,t=1,p=1$bXlzYWx0eXNhbHQ$nz8csvIXGASHCkUia+K4Zg',
+    '$argon2i$m=8,t=1,p=1$bXlzYWx0eXNhbHQ$nz8csvIXGASHCkUia+K4Zg',
 ))
-def test_verify_legacy_passwords_without_secret(porridge, password, encoded):
-    assert porridge.verify(password, encoded)
+def test_verify_legacy_passwords_without_secret(porridge, encoded):
+    assert porridge.verify('password', encoded)
 
 
 @pytest.mark.parametrize('encoded', (

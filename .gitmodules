@@ -1,0 +1,3 @@
+[submodule "extras/libargon2"]
+	path = extras/libargon2
+	url = https://github.com/p-h-c/phc-winner-argon2

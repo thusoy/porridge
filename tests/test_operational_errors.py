@@ -1,9 +1,12 @@
+import os
 import resource
 import contextlib
 
 import pytest
 
 from porridge import Porridge, PorridgeError
+
+SKIP_THREADING_TESTS = os.environ.get('WITH_THREADING_TESTS', '0') == '0'
 
 
 def test_operational_error_memory_allocation_error_on_boil():
@@ -31,15 +34,17 @@ def test_operational_error_memory_allocation_error_on_verify(porridge):
     assert 'Memory allocation' in exception.value.args[0]
 
 
+@pytest.mark.skipif(SKIP_THREADING_TESTS, reason='Skipping threading tests')
 def test_operational_error_on_threading_error_on_boil():
     with nproc_soft_limit(100) as limits:
-        parallelism = limits[0] + 1
+        parallelism = limits[0]*2
         memory_cost = 8*parallelism
         with pytest.raises(PorridgeError) as exception:
             Porridge('key:secret', parallelism=parallelism, memory_cost=memory_cost)
     assert exception.value.args[0] == 'Threading failure'
 
 
+@pytest.mark.skipif(SKIP_THREADING_TESTS, reason='Skipping threading tests')
 def test_operational_error_on_threading_error_on_verify(porridge):
     # 'password' encoded with key 'secret', then just overwriting the costs
     encoded_template = (
@@ -47,7 +52,7 @@ def test_operational_error_on_threading_error_on_verify(porridge):
         'nZOoCCqcGHXS0w3JBFK1ng$eBNrzME/WOyM7N2Hk8Oz8sDGa8b/L3k0RD85JsN49zA'
     )
     with nproc_soft_limit(100) as limits:
-        parallelism = limits[0] + 1
+        parallelism = limits[0]*2
         memory_cost = 8*parallelism
         encoded = encoded_template.format(
             memory_cost=memory_cost,
