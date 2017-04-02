@@ -2,6 +2,9 @@
 
 set -eu
 
+PYTHON="venv/bin/python"
+PIP="venv/bin/pip"
+
 main () {
     initialize_submodules
     create_virtualenv
@@ -16,19 +19,24 @@ initialize_submodules () {
 }
 
 create_virtualenv () {
+    if [ "${NO_VIRTUALENV:-0}" -eq 1 ]; then
+        PIP="pip"
+        PYTHON="python"
+        return
+    fi
     virtualenv venv -p $(which python3)
 }
 
 install_cffi () {
-    ./venv/bin/pip install cffi
+    $PIP install cffi
 }
 
 build_libargon2 () {
-    ./venv/bin/python setup.py build
+    $PYTHON setup.py build
 }
 
 install_requirements () {
-    ./venv/bin/pip install -e .[test]
+    $PIP install -e .[test]
 }
 
 main
