@@ -33,7 +33,7 @@ def test_operational_error_memory_allocation_error_on_verify(porridge):
 
 def test_operational_error_on_threading_error_on_boil():
     with nproc_soft_limit(100) as limits:
-        parallelism = limits[0] + 1
+        parallelism = limits[0]*2
         memory_cost = 8*parallelism
         with pytest.raises(PorridgeError) as exception:
             Porridge('key:secret', parallelism=parallelism, memory_cost=memory_cost)
@@ -47,7 +47,7 @@ def test_operational_error_on_threading_error_on_verify(porridge):
         'nZOoCCqcGHXS0w3JBFK1ng$eBNrzME/WOyM7N2Hk8Oz8sDGa8b/L3k0RD85JsN49zA'
     )
     with nproc_soft_limit(100) as limits:
-        parallelism = limits[0] + 1
+        parallelism = limits[0]*2
         memory_cost = 8*parallelism
         encoded = encoded_template.format(
             memory_cost=memory_cost,
