@@ -2,14 +2,7 @@ import contextlib
 import os
 import re
 
-from argon2.low_level import (
-    ARGON2_VERSION,
-    Type,
-    core,
-    ffi,
-    lib,
-)
-
+from ._ffi import ffi, lib
 from .utils import (
     b64_decode_raw,
     b64_encode_raw,
@@ -158,7 +151,7 @@ class Porridge(object):
             hash_len=self.hash_len,
         )
         with argon2_context(**context_params) as ctx:
-            result = core(ctx, Type.I.value)
+            result = lib.argon2_ctx(ctx, lib.Argon2_i)
 
             if result != lib.ARGON2_OK:
                 error_message = argon2_error_message(result)
@@ -237,7 +230,7 @@ class Porridge(object):
         :rtype: bool
         """
         parsed = parse_encoded(encoded)
-        if parsed['version'] < ARGON2_VERSION:
+        if parsed['version'] < lib.ARGON2_VERSION_NUMBER:
             return True
 
         if parsed['parallelism'] < self.parallelism:
@@ -277,7 +270,7 @@ class Porridge(object):
                 parallelism=self.parallelism,
                 salt=b64_encode_raw(salt),
                 hash=b64_encode_raw(raw_hash),
-                version=ARGON2_VERSION,
+                version=lib.ARGON2_VERSION_NUMBER,
                 keyid=self.keyid.decode('utf-8'),
             )
 
@@ -336,7 +329,7 @@ def argon2_context(
         memory_cost=DEFAULT_MEMORY_COST,
         parallelism=DEFAULT_PARALLELISM,
         flags=DEFAULT_FLAGS,
-        version=ARGON2_VERSION,
+        version=lib.ARGON2_VERSION_NUMBER,
         ):
     csalt = ffi.new("uint8_t[]", salt)
     cout = ffi.new("uint8_t[]", hash_len)
