@@ -1,4 +1,5 @@
 language: python
+sudo: False
 cache: pip
 python:
   - 2.7
