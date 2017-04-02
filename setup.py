@@ -245,14 +245,6 @@ setup(
     description="Simple, strong and standardized keyed password storage",
     packages=find_packages(),
     install_requires=[],
-    extras_require={
-        'test': [
-            'cffi',
-            'pytest',
-            'pytest-cov',
-            'watchdog',
-        ],
-    },
     classifiers=[
         # 'Development Status :: 1 - Planning',
         # 'Development Status :: 2 - Pre-Alpha',

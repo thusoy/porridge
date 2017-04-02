@@ -1,0 +1,6 @@
+cffi
+pytest
+pytest-cov
+requests
+watchdog
+wheel

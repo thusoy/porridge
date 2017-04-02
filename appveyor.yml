@@ -74,12 +74,12 @@ install:
   # target Python version and architecture
   - "git submodule init"
   - "git submodule update"
-  - "%CMD_IN_ENV% pip install cffi wheel"
+  - "%CMD_IN_ENV% pip install -r dev-requirements.txt"
 
 build_script:
   # Build the compiled extension
   - "%CMD_IN_ENV% python setup.py build"
-  - "%CMD_IN_ENV% pip install -e .[test]"
+  - "%CMD_IN_ENV% pip install -e ."
 
 test_script:
   # Run the project tests

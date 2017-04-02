@@ -8,9 +8,9 @@ PIP="./venv/bin/pip"
 main () {
     initialize_submodules
     create_virtualenv
-    install_cffi
-    build_libargon2
     install_requirements
+    build_libargon2
+    install_project
 }
 
 initialize_submodules () {
@@ -27,16 +27,16 @@ create_virtualenv () {
     virtualenv venv -p $(which python3)
 }
 
-install_cffi () {
-    $PIP install cffi
+install_requirements () {
+    $PIP install -r dev-requirements.txt
 }
 
 build_libargon2 () {
     $PYTHON setup.py build
 }
 
-install_requirements () {
-    $PIP install -e .[test]
+install_project() {
+    $PIP install -e .
 }
 
 main
