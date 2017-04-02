@@ -1,6 +1,11 @@
 language: python
 sudo: False
 cache: pip
+addons:
+    artifacts:
+        s3_region: us-west-1
+        paths:
+            - $(ls dist/*.whl | tr "\n" ':')
 python:
   - 2.7
   - 3.3
@@ -8,7 +13,13 @@ python:
   - 3.5
   - 3.6
 install: ./configure
-script: ./test
+script:
+    - ./test
+    - python setup.py bdist_wheel
 env:
     global:
         - NO_VIRTUALENV=1
+        - ARTIFACTS_KEY=AKIAJPQGWFL6SYXPMUBA
+        - ARTIFACTS_BUCKET=porridge-artifacts
+        # ARTIFACTS_SECRET:
+        - secure: "MZsh1ZveQqGIVCof+l53k6uviay+J45Mo7hEX5XI3r41oBQIgSm/P2D2/JNfAaN20rd2V9DmEhHn+SLfJZMTIvza8wA8d60dkPCxzFGgY5UULLt0GfPlTWTzlRox03CcHi2Bb8HGieBXz3vNEfNQhX//YWqw6y+G1Awz1TFso6uu8nHu4P1SoPZZkIby8fvr47dWaC8hSqzOVkqI+7Ss/hhPywS50n3vpmW0VlHRA8N0RRow6toecdb6jg8dOY2B4UgIVVzQx0i3R5y1tHic7C1ztAHESVO+QiYmF3oW5mr4LHF0eLMXKkEoDHNzYeQMh7oUnpprQQDfBan6vEbCLjw55lFj21A7ev//faGEN6qPxSoaWE5M37y81usorT8LVsGdbSAjYAvNjqtRSV9vUzpn9RvbYnzCk2OWmMqDEfs6rzQbvqLkZO7EjC6bq+u9SLYDpBHlqCw+42E/Ls1/7JVoGcTQm4I1iozJ2BLzcFggPN362u8HaWPq9CKb8lMKsku4tOvzlXhNQ9XjExoEVtglvI14mtNhhE6MNufXnR1IdyM8KSzL2a/6f9vX0PdXlhQo77ozEqbwdZLzkS9XNVK05CnQY/y8OCc0uDq1OzOHp/0nUbO+yngTm+WV7TnV9udt/Lg8QGLBdYchw80zZrpVXQTrahcpLXEQ1xnP2C4="
