@@ -2,8 +2,8 @@
 
 set -eu
 
-PYTHON="venv/bin/python"
-PIP="venv/bin/pip"
+PYTHON="./venv/bin/python"
+PIP="./venv/bin/pip"
 
 main () {
     initialize_submodules

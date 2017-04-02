@@ -6,5 +6,8 @@ python:
   - 3.4
   - 3.5
   - 3.6
-install: NO_VIRTUALENV=1 ./configure
+install: ./configure
 script: ./test
+env:
+    global:
+        - NO_VIRTUALENV=1
