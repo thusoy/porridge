@@ -61,7 +61,7 @@ def collect_artifacts_travis():
     bucket = s3.Bucket('porridge-artifacts')
     artifact_prefix = '%s/%s/%s' % (APPVEYOR_ACCOUNT, PROJECT_NAME, last_build_number)
     for artifact in bucket.objects.filter(Prefix=artifact_prefix):
-        artifact_name = os.path.basename(artifact.key)
+        artifact_name = os.path.basename(artifact.key).replace('-linux', '-manylinux1')
         print('Downloading %s' % artifact_name)
         bucket.download_file(artifact.key, os.path.join('dist', artifact_name))
 
