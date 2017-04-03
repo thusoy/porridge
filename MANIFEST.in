@@ -1,0 +1,6 @@
+include *.md LICENSE
+graft extras
+exclude .gitmodules extras/libargon2/.git appveyor.yml
+prune extras/libargon2/latex
+prune extras/libargon2/kats
+global-exclude *.pdf
