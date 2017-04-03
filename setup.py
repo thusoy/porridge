@@ -238,7 +238,7 @@ class BuildCLibWithCompilerFlags(build_clib):
 
 setup(
     name='porridge',
-    version='0.1.0',
+    version='0.1.1',
     author='Tarjei Husøy',
     author_email='git@thusoy.com',
     url='https://github.com/thusoy/porridge',
