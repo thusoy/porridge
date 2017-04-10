@@ -9,6 +9,14 @@ While many password storage schemes like PBKDF2, bcrypt, scrypt and the likes wi
 Note that utilizing porridge is not magical solution to passwords on the internet, a complete solution should still enforce at least a password policy, secure password resets, rate-limiting and U2F/2FA. Have experienced security engineers set up something for you, or use high-level libraries that care of it for you.
 
 
+Installing
+----------
+
+    $ pip install porridge
+
+Pre-built wheels is available for Windows and Linux. Building from source requires cffi >= 1.0.0, which in turn requires libffi and python headers to compile.
+
+
 Usage
 -----
 
