@@ -244,7 +244,7 @@ setup(
     url='https://github.com/thusoy/porridge',
     description="Simple, strong and standardized keyed password storage",
     packages=find_packages(),
-    install_requires=[],
+    install_requires=['cffi'],
     classifiers=[
         # 'Development Status :: 1 - Planning',
         # 'Development Status :: 2 - Pre-Alpha',
