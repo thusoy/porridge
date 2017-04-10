@@ -35,6 +35,7 @@ def main():
 
     build_source_release()
     collect_artifacts()
+    upload_pypi()
 
 
 def build_source_release():
@@ -109,6 +110,13 @@ def download_appveyor_artifact(session, url):
     with open(destination, 'wb') as fh:
         for chunk in response.iter_content(16*2**10):
             fh.write(chunk)
+
+
+def upload_pypi():
+    cmd = ['./venv/bin/twine', 'upload']
+    for artifact in os.listdir('dist'):
+        cmd.append(os.path.join('dist', artifact))
+    subprocess.check_call(cmd)
 
 
 if __name__ == '__main__':

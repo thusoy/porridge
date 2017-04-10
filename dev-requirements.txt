@@ -7,3 +7,4 @@ wheel
 # These are used to fetch build artifacts and release new versions
 boto3
 requests
+twine
