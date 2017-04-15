@@ -6,16 +6,47 @@ addons:
         s3_region: us-west-1
         paths:
             - $(ls dist/*.whl | tr "\n" ':')
-python:
-  - 2.7
-  - 3.3
-  - 3.4
-  - 3.5
-  - 3.6
-install: ./configure
+
+matrix:
+    include:
+        - python: 2.7
+        - python: 3.3
+        - python: 3.4
+        - python: 3.5
+        - python: 3.6
+        - python: pypy
+          env: PY_VERSION=pypy2-5.6
+        - python: pypy
+          env: PY_VERSION=pypy2-5.4
+        - python: pypy
+          env: PY_VERSION=pypy2-5.3
+
+install:
+    - |
+        if [ -n "$PY_VERSION" ]; then
+            git clone --depth 1 https://github.com/pyenv/pyenv ~/.pyenv
+            PYENV_ROOT="$HOME/.pyenv"
+            PATH="$PYENV_ROOT/bin:$PATH"
+            eval "$(pyenv init -)"
+            # Install the latest version of pypy matching the spec
+            latest_py_version=$(pyenv install -l | grep -E "$PY_VERSION" | tail -1)
+            echo "Using Python $latest_py_version"
+            pyenv install $latest_py_version
+            pyenv global $latest_py_version
+        fi
+    - ./configure
+
 script:
+    - |
+        # activate the PyPy env we installed via our custom pyenv in the install stage
+        if [ -n "$PY_VERSION" ]; then
+            PYENV_ROOT="$HOME/.pyenv"
+            PATH="$PYENV_ROOT/bin:$PATH"
+            eval "$(pyenv init -)"
+        fi
     - ./test
     - python setup.py bdist_wheel
+
 env:
     global:
         - NO_VIRTUALENV=1
