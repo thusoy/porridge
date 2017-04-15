@@ -12,7 +12,7 @@ import pytest
 from porridge import Porridge, PorridgeError
 
 SKIP_THREADING_TESTS = not HAS_RESOURCE or os.environ.get('WITH_THREADING_TESTS', '0') == '0'
-SKIP_MEMORY_ALLOC_TESTS = sys.maxsize <= 2**32
+SKIP_MEMORY_ALLOC_TESTS = sys.maxsize <= 2**32 or sys.platform == 'darwin'
 
 
 @pytest.mark.skipif(SKIP_MEMORY_ALLOC_TESTS, reason='Skipping on 32bit platforms')
