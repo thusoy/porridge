@@ -21,6 +21,42 @@ matrix:
         - python: pypy
           env: PY_VERSION=pypy2-5.3
 
+        # macOS Sierra:
+        - language: generic
+          os: osx
+          osx_image: xcode8.3
+          env: PY_VERSION=3.6
+        - language: generic
+          os: osx
+          osx_image: xcode8.3
+          env: PY_VERSION=3.5
+        - language: generic
+          os: osx
+          osx_image: xcode8.3
+          env: PY_VERSION=3.4
+        - language: generic
+          os: osx
+          osx_image: xcode8.3
+          env: PY_VERSION=2.7
+
+        # OS X El Capitan:
+        - language: generic
+          os: osx
+          osx_image: xcode7.3
+          env: PY_VERSION=3.6
+        - language: generic
+          os: osx
+          osx_image: xcode7.3
+          env: PY_VERSION=3.5
+        - language: generic
+          os: osx
+          osx_image: xcode7.3
+          env: PY_VERSION=3.4
+        - language: generic
+          os: osx
+          osx_image: xcode7.3
+          env: PY_VERSION=2.7
+
 install:
     - |
         if [ -n "$PY_VERSION" ]; then
@@ -29,7 +65,7 @@ install:
             PATH="$PYENV_ROOT/bin:$PATH"
             eval "$(pyenv init -)"
             # Install the latest version of pypy matching the spec
-            latest_py_version=$(pyenv install -l | grep -E "$PY_VERSION" | tail -1)
+            latest_py_version=$(pyenv install -l | tr -d ' ' | grep -E "^$PY_VERSION" | tail -1)
             echo "Using Python $latest_py_version"
             pyenv install $latest_py_version
             pyenv global $latest_py_version

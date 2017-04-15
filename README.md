@@ -14,7 +14,7 @@ Installing
 
     $ pip install porridge
 
-Pre-built wheels is available for Windows and Linux. Building from source requires cffi >= 1.0.0, which in turn requires libffi and python headers to compile.
+Pre-built wheels is available for Windows, Linux and macOS. Building from source requires cffi >= 1.0.0, which in turn requires libffi and python headers to compile.
 
 
 Usage
