@@ -133,3 +133,36 @@ Credits
 -------
 
 Many thanks to [argon2_cffi](https://github.com/hynek/argon2_cffi) for a great starting point for wrapping argon2.
+
+
+Troubleshooting
+---------------
+
+### Import fails with libpython shared object not found
+
+If you get a traceback similar to this when trying to import the module:
+
+```
+    from ._ffi import ffi, lib
+ImportError: libpython2.7.so.1.0: cannot open shared object file: No such file or directory
+```
+
+You are probably missing the `python-dev` package. On ubuntu/debian: `sudo apt-get install python-dev`.
+
+
+### Installation fails with 'compilation terminated'
+
+If installing the module fails with a traceback like
+```
+c/_cffi_backend.c:15:17: fatal error: ffi.h: No such file or directory
+
+ #include <ffi.h>
+
+                 ^
+
+compilation terminated.
+
+error: command 'x86_64-linux-gnu-gcc' failed with exit status 1
+```
+
+You are trying to install from source (might happen if using an older pip which doesn't install manylinux1 wheels) and the compiler can't find the libraries it needs. On ubuntu/debian: `sudo apt-get install libffi-dev python-dev`. Updating your pip should also work and might not require root if you're running in a virtualenv.
