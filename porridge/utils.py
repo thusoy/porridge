@@ -3,7 +3,7 @@ import sys
 
 PY2 = sys.version_info < (3, 0, 0)
 
-if PY2:
+if PY2: # pragma: no cover
     string_types = (str, unicode)
 else:
     string_types = (str,)
