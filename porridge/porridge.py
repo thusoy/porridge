@@ -151,7 +151,7 @@ class Porridge(object):
             hash_len=self.hash_len,
         )
         with argon2_context(**context_params) as ctx:
-            result = lib.argon2_ctx(ctx, lib.Argon2_i)
+            result = compute_hash(ctx)
 
             if result != lib.ARGON2_OK:
                 error_message = argon2_error_message(result)
@@ -208,7 +208,7 @@ class Porridge(object):
             context_params['secret'] = secret
 
         with argon2_context(**context_params) as ctx:
-            result = lib.argon2i_verify_ctx(ctx, raw_hash)
+            result = verify_hash(ctx, raw_hash)
 
         if result == lib.ARGON2_OK:
             return True
@@ -317,6 +317,16 @@ def is_operational_error(error_code):
         lib.ARGON2_THREAD_FAIL,
         lib.ARGON2_MEMORY_ALLOCATION_ERROR,
     ])
+
+
+def compute_hash(context):
+    '''Minimal wrapper around argon2_ctx to enable mocking'''
+    return lib.argon2_ctx(context, lib.Argon2_i)
+
+
+def verify_hash(context, raw_hash):
+    '''Minimal wrapper around argon2i_verify_ctx to enable mocking'''
+    return lib.argon2i_verify_ctx(context, raw_hash)
 
 
 @contextlib.contextmanager

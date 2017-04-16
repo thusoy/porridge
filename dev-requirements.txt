@@ -1,4 +1,5 @@
 cffi
+mock # Really only used on 2.7
 pytest
 pytest-cov
 watchdog
