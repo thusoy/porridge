@@ -21,10 +21,9 @@ Usage
 -----
 
 ```python
-import os
 from porridge import Porridge
 
-porridge = Porridge(os.environ['PORRIDGE_SECRETS'])
+porridge = Porridge('myfirstkey:myfirstsecret')
 
 encoded_password = porridge.boil('password')
 if porridge.verify('password', encoded_password):
@@ -33,7 +32,7 @@ else:
     print('Fail!')
 ```
 
-If the PORRIDGE_SECRETS is a comma separated list of `keyid:key` pairs, this setup will ensure that even if your database is leaked, your users' passwords are irrecoverable by an attacker.
+This setup ensures that even if your database is leaked, your users' passwords are irrecoverable by an attacker that does not also possess the `myfirstsecret` value. Load it securely like you would other credentials like API keys, database passwords, session tokens and similar.
 
 This shell snippet is handy to create strong secrets:
 
@@ -89,10 +88,9 @@ The second point ensures that every time one of your users log in, the parameter
 The only thing you need to do this is to check `needs_update()` after a password has been verified, and to store the updated one if that's the case:
 
 ```python
-import os
 from porridge import Porridge
 
-porridge = Porridge(os.environ['PORRIDGE_SECRETS'])
+porridge = Porridge('keyid2:key2,keyid1:key1')
 
 password = ... # get this from the user
 old_encoded_password = ... # Get this from your database
