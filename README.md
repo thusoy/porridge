@@ -48,6 +48,8 @@ The first key in the list (in this case, keyid3) will be used to boil new passwo
 
 Old keys are necessary to verify the passwords of users who haven't logged in since the secret was rotated. Secrets can be dropped from the config when no users have passwords using that id anymore, which you can tell from the `keyid` field in the encoded password.
 
+**Note**: Create a `Porridge` instance once and re-use it across your application, it does some parameter validation and stuff on startup you'd rather not want to redo for every passord you process.
+
 
 Local development
 -----------------
