@@ -109,6 +109,8 @@ else:
 
 The default parameters will be bumped regularly with new releases of porridge, thus as long as you install updates this should keep everything fresh.
 
+Note that to avoid DDoS itself, a Porridge instance will refuse to verify passwords encoded with parameters that are stronger than a given threshold of it's own parameters. This is to ensure that if you by accident try to verify a password with a time cost or memory cost in the millions, you will not have to wait for the heat death of the universe to regain control of your computer. But we also want to ensure that we can upgrade parameters gradually across a fleet of instances without some suddenly starting to fail, thus when you're increasing the cost parameters you should ensure you increase them with less than the `parameter_threshold`. The default threshold is 4, thus you'll be fine if you double parameters, but if you want to bump parameters with more than 4x you should increase `default_threshold` across your fleet first.
+
 
 FAQ
 ---

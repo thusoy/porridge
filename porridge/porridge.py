@@ -24,6 +24,7 @@ DEFAULT_HASH_LENGTH = 32
 DEFAULT_TIME_COST = 2
 DEFAULT_MEMORY_COST = 512
 DEFAULT_PARALLELISM = 4
+DEFAULT_PARAMETER_THRESHOLD = 4
 DEFAULT_FLAGS = lib.ARGON2_FLAG_CLEAR_PASSWORD | lib.ARGON2_FLAG_CLEAR_SECRET
 
 # This regex validates the spec from
@@ -59,6 +60,9 @@ class Porridge(object):
     :param int hash_len: Length of the raw hash in bytes.
     :param int salt_len: Length of random salt to be generated for each
         password.
+    :param int parameter_threshold: A multiplier that sets the threshold for
+        how much higher parameters in encoded passwords can be above our own
+        parameters before we refuse the process them.
     :param str encoding: Boiling is always performed on bytes, thus if unicode
         strings are given to either :meth:`boil` of :meth:`verify` this encoding
         will be used to encode the password to bytes.
@@ -66,10 +70,6 @@ class Porridge(object):
     .. _salt: https://en.wikipedia.org/wiki/Salt_(cryptography)
     .. _kibibytes: https://en.wikipedia.org/wiki/Binary_prefix#kibi
     """
-    __slots__ = [
-        "time_cost", "memory_cost", "parallelism", "hash_len", "salt_len",
-        "encoding", "secret_map", "secret", "keyid"
-    ]
 
     def __init__(
         self,
@@ -79,6 +79,7 @@ class Porridge(object):
         parallelism=DEFAULT_PARALLELISM,
         hash_len=DEFAULT_HASH_LENGTH,
         salt_len=DEFAULT_RANDOM_SALT_LENGTH,
+        parameter_threshold=DEFAULT_PARAMETER_THRESHOLD,
         encoding="utf-8",
     ):
         e = check_types(
@@ -88,6 +89,7 @@ class Porridge(object):
             parallelism=(parallelism, int),
             hash_len=(hash_len, int),
             salt_len=(salt_len, int),
+            parameter_threshold=(parameter_threshold, int),
             encoding=(encoding, string_types),
         )
         if e:
@@ -99,6 +101,9 @@ class Porridge(object):
         self.hash_len = hash_len
         self.salt_len = salt_len
         self.encoding = encoding
+        if parameter_threshold < 1:
+            raise ValueError('parameter_threshold must be at least 1')
+        self.parameter_threshold = parameter_threshold
 
         self.secret_map = {}
         self.secret = None
@@ -190,8 +195,9 @@ class Porridge(object):
              # Ensure we don't DDoS ourselves if the database holds corrupt values
             raise EncodedPasswordError('Encoded password exceeds maximum length of '
                 '265, was {length}'.format(length=len(encoded)))
-        # TODO: Ensure hashed values are maximum double of what we're configured with
+
         context_params = parse_encoded(encoded)
+        self._verify_parameters_within_threshold(context_params)
         raw_hash = context_params.pop('raw_hash')
 
         context_params.update(dict(
@@ -256,6 +262,14 @@ class Porridge(object):
 
     def _ensure_bytes(self, s):
         return ensure_bytes(s, self.encoding)
+
+
+    def _verify_parameters_within_threshold(self, parameters):
+        for parameter in ('time_cost', 'memory_cost', 'parallelism'):
+            given_parameter = parameters[parameter]
+            our_parameter = getattr(self, parameter)
+            if given_parameter > our_parameter * self.parameter_threshold:
+                raise EncodedPasswordError('%s exceeds threshold of what we will process' % parameter)
 
 
     def _encode(self, raw_hash, salt):

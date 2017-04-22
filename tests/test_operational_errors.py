@@ -68,8 +68,10 @@ def test_operational_error_memory_allocation_error_on_verify(porridge):
         '$argon2i$v=19$m=1000000000,t=1,p=1,keyid=key1$nZOoCCqcGHXS0w3JBFK1ng$'
         'eBNrzME/WOyM7N2Hk8Oz8sDGa8b/L3k0RD85JsN49zA'
     )
-    with pytest.raises(PorridgeError) as exception:
-        porridge.verify('password', encoded)
+    # Remove the safety check to allow this test to go through
+    with mock.patch.object(porridge, '_verify_parameters_within_threshold'):
+        with pytest.raises(PorridgeError) as exception:
+            porridge.verify('password', encoded)
     assert 'Memory allocation' in exception.value.args[0]
 
 

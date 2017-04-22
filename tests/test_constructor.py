@@ -20,3 +20,9 @@ def test_invalid_parameter_types_int():
     with pytest.raises(TypeError) as exception:
         Porridge('key:secret', time_cost='hello')
     assert exception.value.args[0].startswith("'time_cost' must be a int")
+
+
+def test_invalid_threshold():
+    with pytest.raises(ValueError) as exception:
+        Porridge('key:secret', parameter_threshold=0)
+    assert exception.value.args[0] == 'parameter_threshold must be at least 1'
