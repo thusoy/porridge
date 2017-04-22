@@ -3,6 +3,8 @@
 from __future__ import unicode_literals
 
 import pytest
+from hypothesis import given, assume
+from hypothesis.strategies import integers, text
 
 from porridge import Porridge, MissingKeyError, EncodedPasswordError
 from porridge.utils import ensure_bytes
@@ -25,7 +27,25 @@ def test_verify(test_password):
     assert porridge.verify(test_password, encoded)
 
 
-def test_verify_self(porridge, password):
+@given(text())
+def test_verify_self(porridge, given_password):
+    assert porridge.verify(given_password, porridge.boil(given_password))
+
+
+@given(
+    time_cost=integers(1, 5),
+    memory_cost=integers(0, 513),
+    parallelism=integers(1, 5),
+)
+def test_verify_custom_parameters(password, time_cost, memory_cost, parallelism):
+    assume(parallelism * 8 <= memory_cost)
+    porridge = Porridge('key:secret', time_cost=time_cost, memory_cost=memory_cost,
+        parallelism=parallelism)
+    assert porridge.verify(password, porridge.boil(password))
+
+
+def test_verify_self_default_parameters(password):
+    porridge = Porridge('key:secret')
     assert porridge.verify(password, porridge.boil(password))
 
 
