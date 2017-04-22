@@ -125,6 +125,24 @@ A: Add a new column in your database to store the new encoded passwords, add por
 A: Because good porridge requires more than just salt, takes a long time to boil, and you cannot separate its ingredients  after they've been boiled. And I was hungry when starting writing this. And we need better terminology for password storage, see the first question.
 
 
+Security
+--------
+
+Porridge wraps the reference implementation of [argon2](https://github.com/P-H-C/phc-winner-argon2), the winner of the Password Hashing Competition, which means it has been studied in detail by very experienced cryptanalysts.
+
+The default parameters aims for ~1ms encoding time with 512kB memory usage, adjust these to suit your environment and your requirements. If you run on very performant hardware you should be able to sustain higher costs:
+
+```python
+porridge = Porridge('key1:secret1', time_cost=8, memory_cost=1024, parallelism=16)
+```
+
+`time_cost` gives the number of iterations of the core algorithm, measure to see the impact in your environment.
+`memory_cost` is how many kibibytes of memory to use for each password boiled.
+`parallelism` is how many threads to use for each password boiled.
+
+If you find a security-critical bug that you'd rather not disclose openly in the issues, shoot an email to hello at thusoy.com. This project does not have a bug bounty, but you will be credited (if you wish) here in the README and in the changelog.
+
+
 Alternatives
 ------------
 
