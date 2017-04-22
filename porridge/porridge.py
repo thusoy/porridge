@@ -377,7 +377,7 @@ def argon2_context(
             m_cost=memory_cost,
             lanes=parallelism, threads=parallelism,
             allocate_cbk=ffi.NULL, free_cbk=ffi.NULL,
-            flags=DEFAULT_FLAGS,
+            flags=flags,
         )
     )
     yield ctx
