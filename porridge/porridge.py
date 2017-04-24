@@ -289,6 +289,31 @@ class Porridge(object):
             )
 
 
+    def __str__(self):
+        return ("Porridge(key='{key}', memory_cost={memory_cost}, "
+            "time_cost={time_cost}, parallelism={parallelism})").format(
+            key=self.keyid.decode('utf-8'),
+            memory_cost=self.memory_cost,
+            time_cost=self.time_cost,
+            parallelism=self.parallelism,
+        )
+
+
+    def __repr__(self):
+        return ("Porridge(key='{key}', memory_cost={memory_cost}, time_cost={time_cost}, "
+            "parallelism={parallelism}, hash_len={hash_len}, salt_len={salt_len}, "
+            "parameter_threshold={parameter_threshold}, encoding='{encoding}')").format(
+            key=self.keyid.decode('utf-8'),
+            memory_cost=self.memory_cost,
+            time_cost=self.time_cost,
+            parallelism=self.parallelism,
+            hash_len=self.hash_len,
+            salt_len=self.salt_len,
+            parameter_threshold=self.parameter_threshold,
+            encoding=self.encoding,
+        )
+
+
 def parse_encoded(encoded):
     match = ENCODED_HASH_RE.match(encoded)
     if not match:
