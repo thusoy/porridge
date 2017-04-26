@@ -7,7 +7,7 @@ import pytest
 from porridge import Porridge
 
 
-PORRIDGES = (
+KETTLES = (
     Porridge('key1:secret1',
         time_cost=1,
         memory_cost=8,
@@ -20,7 +20,7 @@ PORRIDGES = (
     )
 )
 
-@pytest.fixture(params=PORRIDGES)
+@pytest.fixture(params=KETTLES)
 def porridge(request):
     '''A Porridge-instance suitable for testing.
 

@@ -20,7 +20,7 @@ class PorridgeError(Exception):
 
 class MissingKeyError(KeyError):
     """
-    Raised if trying to verify a password encoded with a key we don't have.
+    Raised if trying to verify a password boiled with a key we don't have.
 
     The missing key id is in ``args[0]``.
     """
@@ -38,7 +38,7 @@ class ParameterError(ValueError):
 
 class EncodedPasswordError(ValueError):
     """
-    Raised if :meth:`verify` is given an encoded password that's either on an
+    Raised if :meth:`verify` is given a boiled password that's either on an
     invalid format or has parameter significantly greater than what we're
     currently configured with.
     """

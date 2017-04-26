@@ -61,7 +61,7 @@ class Porridge(object):
     :param int salt_len: Length of random salt to be generated for each
         password.
     :param int parameter_threshold: A multiplier that sets the threshold for
-        how much higher parameters in encoded passwords can be above our own
+        how much higher parameters in boiled passwords can be above our own
         parameters before we refuse the process them.
     :param str encoding: Boiling is always performed on bytes, thus if unicode
         strings are given to either :meth:`boil` of :meth:`verify` this encoding
@@ -130,7 +130,7 @@ class Porridge(object):
 
     def boil(self, password):
         """
-        Boil *password* and return and encoded password that can be stored in a
+        Boil *password* and return and boiled password that can be stored in a
         database.
 
         :param password: Password to boil.
@@ -169,13 +169,13 @@ class Porridge(object):
         return self._encode(raw_hash, salt)
 
 
-    def verify(self, password, encoded):
+    def verify(self, password, boiled):
         """
-        Verify that *password* matches *encoded*.
+        Verify that *password* matches *boiled*.
 
         :param password: The password to verify.
         :type password: ``bytes`` or ``unicode``
-        :param unicode encoded: An encoded password as returned from
+        :param unicode boiled: An boiled password as returned from
             :meth:`Porridge.boil`.
 
         :raises porridge.PorridgeError: If verification fails to complete due
@@ -186,17 +186,17 @@ class Porridge(object):
         """
         e = check_types(
             password=(password, string_types + (bytes,)),
-            encoded=(encoded, string_types),
+            boiled=(boiled, string_types),
         )
         if e:
             raise TypeError(e)
 
-        if len(encoded) > 265:
+        if len(boiled) > 265:
              # Ensure we don't DDoS ourselves if the database holds corrupt values
             raise EncodedPasswordError('Encoded password exceeds maximum length of '
-                '265, was {length}'.format(length=len(encoded)))
+                '265, was {length}'.format(length=len(boiled)))
 
-        context_params = parse_encoded(encoded)
+        context_params = parse_boiled(boiled)
         self._verify_parameters_within_threshold(context_params)
         raw_hash = context_params.pop('raw_hash')
 
@@ -225,17 +225,17 @@ class Porridge(object):
             raise PorridgeError(error_message)
 
 
-    def needs_update(self, encoded):
+    def needs_update(self, boiled):
         """
-        Check if the parameters in *encoded* are old and the password should be
+        Check if the parameters in *boiled* are old and the password should be
         re-boiled.
 
-        :param unicode encoded: An encoded password as returned from
+        :param unicode boiled: An boiled password as returned from
             :meth:`Porridge.boil`.
 
         :rtype: bool
         """
-        parsed = parse_encoded(encoded)
+        parsed = parse_boiled(boiled)
         if parsed['version'] < lib.ARGON2_VERSION_NUMBER:
             return True
 
@@ -314,15 +314,15 @@ class Porridge(object):
         )
 
 
-def parse_encoded(encoded):
-    match = ENCODED_HASH_RE.match(encoded)
+def parse_boiled(boiled):
+    match = ENCODED_HASH_RE.match(boiled)
     if not match:
-        raise EncodedPasswordError('Encoded password is on unknown format', encoded)
+        raise EncodedPasswordError('Encoded password is on unknown format', boiled)
     version = match.group('version')
     if version:
         version = int(version)
     else:
-        # Default to the old version as only ARGON2_VERSION_13 includes it in the encoded string
+        # Default to the old version as only ARGON2_VERSION_13 includes it in the boiled string
         version = lib.ARGON2_VERSION_10
 
     salt = b64_decode_raw(match.group('salt'))

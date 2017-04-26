@@ -41,9 +41,9 @@ def check_types(**kw):
         return ", ".join(errors) + "."
 
 
-def b64_decode_raw(encoded):
+def b64_decode_raw(boiled):
     '''Decode basse64 string without padding'''
-    return base64.b64decode(encoded + ('='*((4 - len(encoded) % 4) % 4)))
+    return base64.b64decode(boiled + ('='*((4 - len(boiled) % 4) % 4)))
 
 
 def b64_encode_raw(bytestring):
