@@ -2,8 +2,9 @@
 
 import argparse
 import os
-import shutil
 import pprint
+import re
+import shutil
 import subprocess
 
 import boto3
@@ -29,6 +30,7 @@ def main():
     build_source_release()
     collect_artifacts()
     upload_pypi()
+    git_tag()
 
 
 def build_source_release():
@@ -110,6 +112,22 @@ def upload_pypi():
     for artifact in os.listdir('dist'):
         cmd.append(os.path.join('dist', artifact))
     subprocess.check_call(cmd)
+
+
+def git_tag():
+    version = get_version()
+    subprocess.check_call([
+        'git',
+        'tag',
+        '-m', 'Release %s' % version,
+        'v%s' % version,
+    ])
+    subprocess.check_call(['git', 'push', '--tags'])
+
+
+def get_version():
+    with open('setup.py') as fh:
+        return re.search(r"version='(\d+\.\d+.\d+)',", fh.read()).groups(1)
 
 
 if __name__ == '__main__':
