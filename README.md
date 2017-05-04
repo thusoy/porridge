@@ -1,4 +1,4 @@
-# porridge [![Build Status](https://travis-ci.org/thusoy/porridge.svg?branch=master)](https://travis-ci.org/thusoy/porridge) [![Windows build status](https://ci.appveyor.com/api/projects/status/y51rewx877d522b5/branch/master?svg=true)](https://ci.appveyor.com/project/thusoy/porridge/branch/master)
+# porridge [![PyPI](https://img.shields.io/pypi/v/porridge.svg)](https://pypi.org/project/porridge) [![Build Status](https://travis-ci.org/thusoy/porridge.svg?branch=master)](https://travis-ci.org/thusoy/porridge) [![Windows build status](https://ci.appveyor.com/api/projects/status/y51rewx877d522b5/branch/master?svg=true)](https://ci.appveyor.com/project/thusoy/porridge/branch/master)
 
 Simple, strong and standardized keyed password storage.
 
