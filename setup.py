@@ -235,6 +235,9 @@ class BuildCLibWithCompilerFlags(build_clib):
                                             debug=self.debug)
 
 
+with open(os.path.join(os.path.dirname(__file__), 'README.md')) as fh:
+    long_description = fh.read()
+
 
 setup(
     name='porridge',
@@ -246,6 +249,7 @@ setup(
     packages=find_packages(),
     install_requires=['cffi>=1.0.0'],
     keywords="password argon2 hash boil secret security",
+    long_description=long_description,
     classifiers=[
         # 'Development Status :: 1 - Planning',
         # 'Development Status :: 2 - Pre-Alpha',
