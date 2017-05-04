@@ -24,7 +24,10 @@ APPVEYOR_URL = 'https://ci.appveyor.com/api'
 
 
 def main():
-    shutil.rmtree('dist')
+    try:
+        shutil.rmtree('dist')
+    except FileNotFoundError:
+        pass
     os.makedirs('dist')
 
     build_source_release()
