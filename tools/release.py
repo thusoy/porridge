@@ -9,13 +9,6 @@ import subprocess
 import boto3
 import requests
 
-"""
-
-Can fetch artifacts for previous commit and release them, but version built in will be wrong.
-Should thus commit changes and version, tag and push, wait for CI to finish, then download
-artifacts and upload to pypi.
-"""
-
 
 # Project-dependent configuration
 APPVEYOR_API_TOKEN = os.environ['APPVEYOR_API_TOKEN']
