@@ -241,7 +241,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as fh:
 
 setup(
     name='porridge',
-    version='0.1.6',
+    version='1.0.0',
     author='Tarjei Husøy',
     author_email='git@thusoy.com',
     url='https://github.com/thusoy/porridge',
