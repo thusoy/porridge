@@ -124,6 +124,9 @@ A: Add a new column in your database to store the boiled passwords, add porridge
 *Q: Why "porridge"?*
 A: Because good porridge requires more than just salt, takes a long time to boil, and you cannot separate its ingredients  after they've been boiled. And I was hungry when starting writing this. And we need better terminology for password storage, see the first question.
 
+*Q: Could you release wheels for platform X?*
+A: All releases of Porridge use wheels built by Travis CI and AppVeyor (see `./tools/release.py` for how it's done). If you need another platform supported, like a specific version of PyPy on some platform, open a PR adding it to the build matrix, and it'll automatically be part of the next release.
+
 
 Security
 --------
