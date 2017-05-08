@@ -4,7 +4,7 @@ Simple, strong and standardized keyed password storage.
 
 Keyed password storage utilizes server-side secrets to ensure passwords cannot be brute-forced offline if your database is leaked. A leak could happen through a SQL injection or a compromised backup, or a host of other sadly quite common webapp vulnerabilities.
 
-While many password storage schemes like PBKDF2, bcrypt, scrypt and the likes will make recovering the passwords offline slow, a resourceful and patient attacker will eventually be able to recover most of them. Porridge makes this entirely impossible unless your secret is also leaked, which is often not the case for many common vulnerabilities.
+While many password storage schemes like PBKDF2, bcrypt, scrypt and the likes will make recovering the passwords offline slow, a resourceful and patient attacker will eventually be able to recover most of them. Porridge makes this entirely impossible unless your secret is also leaked, which is often not the case for many common vulnerabilities. More details in my [blog post](https://thusoy.com/2017/resistance-era-password-storage) on the topic.
 
 Note that utilizing porridge is not magical solution to passwords on the internet, a complete solution should still enforce at least a password policy, secure password resets, rate-limiting and U2F/2FA. Have experienced security engineers set up something for you, or use high-level libraries that take care of it for you.
 
