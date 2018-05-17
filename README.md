@@ -21,15 +21,16 @@ Usage
 -----
 
 ```python
-from porridge import Porridge
-
-porridge = Porridge('myfirstkey:myfirstsecret')
-
-boiled_password = porridge.boil('password')
-if porridge.verify('password', boiled_password):
-    print('Success!')
-else:
-    print('Fail!')
+>>> from porridge import Porridge
+>>> porridge = Porridge('myfirstkey:myfirstsecret')
+>>> boiled_password = porridge.boil('password')
+>>> porridge.verify('password', boiled_password):
+True
+>>> porridge.verify('notmypassword', boiled_password)
+False
+>>> wrong_secret_porridge = Porridge('myfirstkey:wrongsecret')
+>>> wrong_secret_porridge.verify('password', boiled_password)
+False
 ```
 
 This setup ensures that even if your database is leaked, your users' passwords are irrecoverable by an attacker that does not also possess the `myfirstsecret` value. Load it securely like you would other credentials like API keys, database passwords, session tokens and similar.
